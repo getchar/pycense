@@ -1,11 +1,11 @@
 #! /usr/bin/python
 
 import unittest
-import pycense
+import objects
 
 class TestSequenceFunctions(unittest.TestCase):
     def setUp(self):
-        self.com = pycense.commentator("")
+        self.com = objects.commentator("")
 
     def test_horizontal_endless(self):
         """Generate horizontal border with no end."""
@@ -84,7 +84,7 @@ class TestSequenceFunctions(unittest.TestCase):
     def test_min_width_created_a_priori(self):
         """Verify that when creatd, width contains a minimum reasonable
         value."""
-        newcom = pycense.commentator()
+        newcom = objects.commentator()
         should_width = 1
         self.assertEqual(newcom.width, should_width)
         del newcom
