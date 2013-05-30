@@ -1,8 +1,10 @@
 #! /usr/bin/python
 
-import textwrap
 import sys
+from textwrap import wrap
 from itertools import izip
+
+from pprint import pprint
 
 settings_abbrevs = {"tb": "top_begin", "tf": "top_fill", "te": "top_end",
                     "tl": "top_ljust", "lw": "left_wall", "rw": "right_wall",
@@ -59,6 +61,18 @@ class commentator:
         setattr(self, name, value)
         self.validate()
 
+    def sr(self, name, default = ""):
+        """Safe reference; if the commentator contains a member by the
+        given name, return the value in that member.  Else, return
+        empty string.
+
+        name: names data member being referenced.
+        default: value to return if no data member by that name."""
+        if hasattr(self, name):
+            return getattr(self, name)
+        else:
+            return default
+
     def validate(self):
         """Verify that settings are meaningful in their present state.  What
         this comes down to is: can the line width requested by the user
@@ -66,27 +80,16 @@ class commentator:
         to change the width programmatically and later changes might render
         a previously requested width adequate, check to see if we can revert
         to an earlier, explicitly requested value (explicit_width)."""
-        def sr(name, default = ""):
-            """Safe reference; if the commentator contains a member by the
-            given name, return the value in that member.  Else, return
-            empty string.
-
-            name: names data member being referenced.
-            default: value to return if no data member by that name."""
-            if hasattr(self, name):
-                return getattr(self, name)
-            else:
-                return default
-        top = len(sr("top_begin")) + len(sr("top_end"))
-        mid = len(sr("left_wall")) + 1 + len(sr("right_wall"))
+        top = len(self.sr("top_begin")) + len(self.sr("top_end"))
+        mid = len(self.sr("left_wall")) + 1 + len(self.sr("right_wall"))
         # need at least one char width for text
-        low = len(sr("bottom_begin")) + len(sr("bottom_end"))
+        low = len(self.sr("bottom_begin")) + len(self.sr("bottom_end"))
         min_width = max(top, mid, low)
         # if current width is inadequate, increase it
         if self.width < min_width:
             self.width = min_width
         # if previously requested width becomes adequate, return to it
-        explicit_width = sr("explicit_width", 0)
+        explicit_width = self.sr("explicit_width", 0)
         if explicit_width >= min_width:
             # if width has been
             self.width = explicit_width
@@ -130,15 +133,27 @@ class commentator:
     def get_boxed(self, text):
         """Enclose text in a comment box according to the settings.
 
-        text: any printable text."""
-        lines = []
-        lines.append(self.get_horizontal("top"))
-        text = text.expandtabs(tab)
-        walls_width = len(self.left_wall + self.right_wall)
+        text: any printable text that does not include tabs and paragraphs
+        should be divided by bare newlines."""
+        text = text.rstrip("\n")
+        comment_lines = []
+        comment_lines.append(self.get_horizontal("top"))
+        tabwidth = self.sr("tab", 8)
+        walls_width = len(self.sr("left_wall")) + len(self.sr("right_wall"))
         line_width = self.width - walls_width
-        for line in textwrap.wrap(text, line_width):
+        text = text.expandtabs(tabwidth)
+        paragraphs = text.split("\n\n")
+        # generate a list of lists of lines
+        p_list = [wrap(p, line_width) for p in paragraphs]
+        # put an list containing an empty string after every list of lines
+        paragraphs = sum([[pl, [""]] for pl in p_list], [])[:-1]
+        # flatten list into a list of strings separated by empty strings
+        lines = [line for paragraph in paragraphs for line in paragraph]
+        for line in lines:
             nspaces = self.width - (walls_width + len(line))
-            lines.append("%s%s%s%s" % (self.left_wall, line, " " * nspaces,
-                                       self.right_wall))
-        lines.append(self.get_horizontal("bottom"))
-        return "\n".join(lines)
+            comment_lines.append("%s%s%s%s" % (self.sr("left_wall"), 
+                                               line,
+                                               " " * nspaces,
+                                               self.sr("right_wall")))
+        comment_lines.append(self.get_horizontal("bottom"))
+        return "\n".join(comment_lines)
