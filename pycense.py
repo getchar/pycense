@@ -10,6 +10,7 @@ parser = argparse.ArgumentParser(description = \
                                       "source code."))
 
 settings = "tb, '#', tf, '#', lw, '# ', bb, '#', bf, '#', w, 50"
+settings = "tb, '', tf, '', lw, '# ', bb, '#', bf, '#', w, 50"
 com = commentator(settings, ",")
 text = open("mit_license.txt", "r").read()
 print com.get_boxed(text)

@@ -106,10 +106,7 @@ class commentator:
         d = {}
         names = ["begin", "fill", "end", "ljust"]
         for name in names:
-            try:
-                d[name] = getattr(self, side + "_" + name)
-            except:
-                d[name] = " "
+            d[name] = self.sr(side + "_" + name, "")
         if not d["fill"]:
             if d["end"]:
                 # replace fill with space to position end
@@ -135,25 +132,27 @@ class commentator:
 
         text: any printable text that does not include tabs and paragraphs
         should be divided by bare newlines."""
+        def cond_append(l, s):
+            if s:
+                l.append(s)
         text = text.rstrip("\n")
         comment_lines = []
-        comment_lines.append(self.get_horizontal("top"))
+        cond_append(comment_lines, self.get_horizontal("top"))
         tabwidth = self.sr("tab", 8)
         walls_width = len(self.sr("left_wall")) + len(self.sr("right_wall"))
         line_width = self.width - walls_width
+        # futz with text a bit
         text = text.expandtabs(tabwidth)
-        paragraphs = text.split("\n\n")
-        # generate a list of lists of lines
-        p_list = [wrap(p, line_width) for p in paragraphs]
-        # put an list containing an empty string after every list of lines
-        paragraphs = sum([[pl, [""]] for pl in p_list], [])[:-1]
-        # flatten list into a list of strings separated by empty strings
-        lines = [line for paragraph in paragraphs for line in paragraph]
-        for line in lines:
+        # break into paragraphs, force paragraphs to line_width,
+        p_list = [wrap(p, line_width) for p in text.split("\n\n")]
+        lines = []
+        # blank lines to separate paragraphs; ignore extra blank line
+        map(lambda s: lines.extend(s + [""]), p_list)
+        for line in lines[:-1]:
             nspaces = self.width - (walls_width + len(line))
-            comment_lines.append("%s%s%s%s" % (self.sr("left_wall"), 
-                                               line,
-                                               " " * nspaces,
-                                               self.sr("right_wall")))
-        comment_lines.append(self.get_horizontal("bottom"))
+            cond_append(comment_lines, ("%s%s%s%s" % (self.sr("left_wall"), 
+                                                      line,
+                                                      " " * nspaces,
+                                                      self.sr("right_wall"))))
+        cond_append(comment_lines, self.get_horizontal("bottom"))
         return "\n".join(comment_lines)
