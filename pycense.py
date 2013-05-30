@@ -26,7 +26,6 @@ class commentator:
     """Class for generating boxed comments according to a specifications 
     string.
 
-    Data members:
     top_begin, top_fill, top_end: describe the top of the boxed section;
       top_fill is repeated as many times as possible to fill the space
       between top_begin and top_end.  
