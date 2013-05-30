@@ -10,23 +10,23 @@ The width can also be adjusted, within certain common sense constraints that I'l
 
 Here's an example comment box along with the variables used to create it:
 
-/*BCABCABC  
-// text %%  
-// goes %%  
-// here %%  
-DEFDEFDE*/  
+    /*BCABCABC  
+    // text %%  
+    // goes %%  
+    // here %%  
+    DEFDEFDE*/  
 
-top_begin: "/*"  
-top_fill: "ABC"  
-top_end: ""  
-top_ljust: False  
-left_wall: "// " (buffer space is part of the wall)  
-right_wall: " %%"  
-bottom_begin: ""  
-bottom_fill: "DEF"  
-bottom_end: "*/"  
-bottom_ljust: True  
-width: 9  
+`top_begin`: "/*"  
+`top_fill`: "ABC"  
+`top_end`: ""  
+`top_ljust`: False  
+`left_wall`: "// " (buffer space is part of the wall)  
+`right_wall`: " %%"  
+`bottom_begin`: ""  
+`bottom_fill`: "DEF"  
+`bottom_end`: "*/"  
+`bottom_ljust`: True  
+`width`: 9  
 
 On `width`:
 
