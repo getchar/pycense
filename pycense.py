@@ -39,7 +39,7 @@ class commentator:
 
     def __init__(self, settings = "", delim = "\n"):
         """Initialize a commentator according to settings string."""
-        self.width = 2
+        self.width = 1 # needs to be an int >= 1 no matter what
         self.swap_in(settings, delim)
 
     def clear_all(self):
@@ -47,6 +47,7 @@ class commentator:
         only really here for testing."""
         for field in vars(self):
             setattr(self, field, "")
+        self.width = 1
 
     def swap_in(self, settings, delim):
         """Applies settings to existing commentator, expands settings as 
@@ -66,25 +67,43 @@ class commentator:
         """Set a single value; easier to read for humans."""
         if name in settings_abbrevs:
             name = settings_abbrevs[name]
+        if name == "width":
+            # may need to change width; may need to change back
+            self.explicit_width = value
         setattr(self, name, value)
         self.validate()
 
     def validate(self):
-        def sr(s):
+        """Verify that settings are meaningful in their present state.  What
+        this comes down to is: can the line width requested by the user
+        accomodate the lengths of the other elements?  Because we are liable
+        to change the width programmatically and later changes might render
+        a previously requested width adequate, check to see if we can revert
+        to an earlier, explicitly requested value (explicit_width)."""
+        def sr(name, default = ""):
             """Safe reference; if the commentator contains a member by the
             given name, return the value in that member.  Else, return
-            empty string."""
-            try:
-                return getattr(self, s)
-            except:
-                return ""
+            empty string.
+
+            name: names data member being referenced.
+            default: value to return if no data member by that name."""
+            if hasattr(self, name):
+                return getattr(self, name)
+            else:
+                return default
         top = len(sr("top_begin")) + len(sr("top_end"))
         mid = len(sr("left_wall")) + 1 + len(sr("right_wall"))
-        # need to add at least one for the text
+        # need at least one char width for text
         low = len(sr("bottom_begin")) + len(sr("bottom_end"))
         min_width = max(top, mid, low)
+        # if current width is inadequate, increase it
         if self.width < min_width:
             self.width = min_width
+        # if previously requested width becomes adequate, return to it
+        explicit_width = sr("explicit_width", 0)
+        if explicit_width >= min_width:
+            # if width has been
+            self.width = explicit_width
 
     def get_horizontal(self, side):
         """Generate a horizontal boundary string according to previously
