@@ -28,7 +28,7 @@ Here's an example comment box along with the variables used to create it:
 `bottom_ljust`: True  
 `width`: 9  
 
-**On Being the Right Size: a Word about `width``**
+**On Being the Right Size: a Word about `width`**
 
 Because comment boxes are designed to accomodate text, the text portion of the comment box must be at least one character wide.  Furthermore, the maximum line width must be long enough to include all of the guaranteed printable portions of the comment box (that is: top_begin and top_end, bottom_begin and bottom_end, and left_wall, right_wall and one character of text).  If the width explicitly requested by the user is smaller than the minimum width required by the rest of the settings, the printed width will be automatically reset to the required minimum width.  If any other settings are changed to make the explicitly requested width possible, the printed width will be reset to the requested value.
 
