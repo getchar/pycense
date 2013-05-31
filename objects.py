@@ -25,10 +25,10 @@ class commentator:
     bottom_begin, bottom_fill, bottom_end, bottom_fill: behave like
       their counterparts on top."""
 
-    def __init__(self, settings = "", delim = "\n"):
+    def __init__(self, settings = ""):
         """Initialize a commentator according to settings string."""
         self.width = 1 # needs to be an int >= 1 no matter what
-        self.swap_in(settings, delim)
+        self.swap_in(settings)
 
     def clear_all(self):
         """Clear all the values stored in all the data members.
@@ -37,7 +37,7 @@ class commentator:
             setattr(self, field, "")
         self.width = 1
 
-    def swap_in(self, settings, delim):
+    def swap_in(self, settings):
         """Applies settings to existing commentator, expands settings as 
         needed.
 
@@ -46,10 +46,12 @@ class commentator:
         delim: character that separates settings from values as well as 
           setting/value pairs in the settings string.  delim must not appear
           in either the name of a setting or the value presented."""
-        interleaved = settings.split(delim)
-        for name, value in izip(interleaved[::2], interleaved[1::2]):
-            name = name.strip(" ")
-            self.set_value(name, eval(value))
+        if not settings:
+            return
+        temp = eval(settings)
+        assert type(temp) is dict
+        for name in temp:
+            self.set_value(name, temp[name])
 
     def set_value(self, name, value):
         """Set a single value; easier to read for humans; used for tests."""

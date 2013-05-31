@@ -9,8 +9,8 @@ class TestSequenceFunctions(unittest.TestCase):
 
     def test_horizontal_endless(self):
         """Generate horizontal border with no end."""
-        settings = "tb, '//', tf, '=', te, '', w, 5"
-        self.com.swap_in(settings, ",")
+        settings = "{'tb': '//', 'tf': '=', 'te': '', 'w': 5}"
+        self.com.swap_in(settings)
         should_top = "//==="
         is_top = self.com.get_horizontal("top")
         self.assertEqual(should_top, is_top)
@@ -18,8 +18,8 @@ class TestSequenceFunctions(unittest.TestCase):
 
     def test_horizontal_full_sequence(self):
         """Generate horizontal border with beginning, fill and end."""
-        settings = "tb, '/*', tf, '=', te, '*/', w, 5"
-        self.com.swap_in(settings, ",")
+        settings = "{'tb': '/*', 'tf': '=', 'te': '*/', 'w': 5}"
+        self.com.swap_in(settings)
         should_top = "/*=*/"
         is_top = self.com.get_horizontal("top")
         self.assertEqual(should_top, is_top)
@@ -27,16 +27,16 @@ class TestSequenceFunctions(unittest.TestCase):
     def test_horizontal_no_fill(self):
         """Generate horizontal border with beginning and end but no fill;
         verify that get_horizonal fills in necessary region with spaces."""
-        settings = "tb, '/*', tf, '', te, '*/', w, 5"
-        self.com.swap_in(settings, ",")
+        settings = "{'tb': '/*', 'tf': '', 'te': '*/', 'w': 5}"
+        self.com.swap_in(settings)
         should_top = "/* */"
         is_top = self.com.get_horizontal("top")
         self.assertEqual(should_top, is_top)
 
     def test_horizontal_endlessly_unfulfilled(self):
         """Generate horizontal border with only a beginnint."""
-        settings = "tb, '/*', tf, '', te, '', w, 5"
-        self.com.swap_in(settings, ",")
+        settings = "{'tb': '/*', 'tf': '', 'te': '', 'w': 5}"
+        self.com.swap_in(settings)
         should_top = "/*"
         is_top = self.com.get_horizontal("top")
         self.assertEqual(should_top, is_top)
@@ -44,8 +44,8 @@ class TestSequenceFunctions(unittest.TestCase):
     def test_horizontal_bottom(self):
         """All previous tests were for the top piece.  Make one for the 
         bottom."""
-        settings = "bb, '#', bf, '#', be, '#', w, 5"
-        self.com.swap_in(settings, ",")
+        settings = "{'bb': '#', 'bf': '#', 'be': '#', 'w': 5}"
+        self.com.swap_in(settings)
         should_top = "#####"
         is_top = self.com.get_horizontal("bottom")
         self.assertEqual(should_top, is_top)
@@ -54,8 +54,8 @@ class TestSequenceFunctions(unittest.TestCase):
         """Make a horizontal border where the length of the fill is not an even
         multiple of the space between the end pieces.  Verify that fill is
         justified to the left."""
-        settings = "bb, '//', bf, 'AB', be, '', w, 5, bl, True"
-        self.com.swap_in(settings, ",")
+        settings = "{'bb': '//', 'bf': 'AB', 'be': '', 'w': 5, 'bl': True}"
+        self.com.swap_in(settings)
         should_top = "//ABA"
         is_top = self.com.get_horizontal("bottom")
         self.assertEqual(should_top, is_top)
@@ -64,8 +64,8 @@ class TestSequenceFunctions(unittest.TestCase):
         """Make a horizontal border where the length of the fill is not an even
         multiple of the space between the end pieces.  Verify that fill is
         justified to the right."""
-        settings = "bb, '//', bf, 'AB', be, '', w, 5, bl, False"
-        self.com.swap_in(settings, ",")
+        settings = "{'bb': '//', 'bf': 'AB', 'be': '', 'w': 5, 'bl': False}"
+        self.com.swap_in(settings)
         should_top = "//BAB"
         is_top = self.com.get_horizontal("bottom")
         self.assertEqual(should_top, is_top)
@@ -74,10 +74,10 @@ class TestSequenceFunctions(unittest.TestCase):
         """Create a commentator with a width smaller than the lengths of the
         end pieces will allow.  Veryfiy that the validation process replaces
         that bad width with something reasonable."""
-        settings = ("tb, '/*', tf, '', te, '*/', "
-                    "lw, '//', rw, '', "
-                    "bb, '/*', bf, '', be, '*/'")
-        self.com.swap_in(settings, ",")
+        settings = ("{'tb': '/*', 'tf': '', 'te': '*/', "
+                    "'lw': '//', 'rw': '', "
+                    "'bb': '/*', 'bf': '', 'be': '*/'}")
+        self.com.swap_in(settings)
         should_width = 4
         self.assertEqual(self.com.width, should_width)
 
@@ -100,8 +100,8 @@ class TestSequenceFunctions(unittest.TestCase):
         """Verify that once a minimum width has been set, commentator will 
         return to the last explicitly requested width if further changes make 
         it possible to do so."""
-        settings = "tb, '/*', tf, '=', te, '*/', w, 3"
-        self.com.swap_in(settings, ",")
+        settings = "{'tb': '/*', 'tf': '=', 'te': '*/', 'w': 3}"
+        self.com.swap_in(settings)
         self.com.set_value("te", "")
         should_width = 3
         self.assertEqual(self.com.width, should_width)

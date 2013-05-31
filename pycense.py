@@ -9,8 +9,8 @@ parser = argparse.ArgumentParser(description = \
                                       "slipping copyright notices into your "
                                       "source code."))
 
-settings = "tb, '#', tf, '#', lw, '# ', bb, '#', bf, '#', w, 50"
-settings = "tb, '', tf, '', lw, '# ', bb, '#', bf, '#', w, 50"
-com = commentator(settings, ",")
+settings = "{'tb': '#', 'tf': '#', 'lw': '# ', 'bb': '#', 'bf': '#', 'w': 50}"
+com = commentator()
+com.swap_in(settings)
 text = open("mit_license.txt", "r").read()
 print com.get_boxed(text)
