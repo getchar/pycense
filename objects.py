@@ -9,10 +9,10 @@ from pprint import pprint
 settings_abbrevs = {"tb": "top_begin", "tf": "top_fill", "te": "top_end",
                     "tl": "top_ljust", "lw": "left_wall", "rw": "right_wall",
                     "bb": "bottom_begin", "bf": "bottom_fill", 
-                    "be": "bottom_end", "bl": "bottom_ljust", "w": "width"
+                    "be": "bottom_end", "bl": "bottom_ljust", "w": "width",
                     "t": "tab", "mn": "magic_number"}
 
-class commentator:
+class Commentator:
     """Class for generating boxed comments according to a specifications 
     string.
 
@@ -63,6 +63,9 @@ class commentator:
         """Set a single value; easier to read for humans; used for tests."""
         if name in settings_abbrevs:
             name = settings_abbrevs[name]
+        if name not in settings_abbrevs.values():
+            # might want to complain here
+            return
         if name == "width":
             # may need to change width; may need to change back
             self.explicit_width = value
@@ -164,3 +167,10 @@ class commentator:
                                                       self.sr("right_wall"))))
         cond_append(comment_lines, self.get_horizontal("bottom"))
         return "\n".join(comment_lines)
+
+    def get_storage(self):
+        """Generate string to store settings as dictionary for later use."""
+        return str(vars(self))
+
+class SetAction(argparse.Action):
+    pass

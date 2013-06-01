@@ -17,7 +17,11 @@ Core functionality and flags:
 		(Any explicitly set fields are substituted
 		 in the currently loaded profile.)
 	Store named comment profile with substitutions
-		--in_place
+		--store_in_place
+	Store comment profile under a new name
+		--store_as NAME
+	Rename a named comment profile
+		--rename OLD NEW
 	Load a license
 		--license IMPORTED_LICENSE_BY_NAME
 		--license_file ANY_FILE

@@ -5,7 +5,7 @@ import objects
 
 class TestSequenceFunctions(unittest.TestCase):
     def setUp(self):
-        self.com = objects.commentator("")
+        self.com = objects.Commentator("")
 
     def test_horizontal_endless(self):
         """Generate horizontal border with no end."""
@@ -71,7 +71,7 @@ class TestSequenceFunctions(unittest.TestCase):
         self.assertEqual(should_top, is_top)
 
     def test_min_width_by_length(self):
-        """Create a commentator with a width smaller than the lengths of the
+        """Create a Commentator with a width smaller than the lengths of the
         end pieces will allow.  Veryfiy that the validation process replaces
         that bad width with something reasonable."""
         settings = ("{'tb': '/*', 'tf': '', 'te': '*/', "
@@ -84,7 +84,7 @@ class TestSequenceFunctions(unittest.TestCase):
     def test_min_width_created_a_priori(self):
         """Verify that when creatd, width contains a minimum reasonable
         value."""
-        newcom = objects.commentator()
+        newcom = objects.Commentator()
         should_width = 1
         self.assertEqual(newcom.width, should_width)
         del newcom
@@ -97,7 +97,7 @@ class TestSequenceFunctions(unittest.TestCase):
         self.assertEqual(self.com.width, should_width)
 
     def test_min_width_return_to_explicit(self):
-        """Verify that once a minimum width has been set, commentator will 
+        """Verify that once a minimum width has been set, Commentator will 
         return to the last explicitly requested width if further changes make 
         it possible to do so."""
         settings = "{'tb': '/*', 'tf': '=', 'te': '*/', 'w': 3}"
