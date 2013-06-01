@@ -1,25 +1,73 @@
-Flags:
-	Create named comment profile
-	Apply named comment profile
-	Apply named comment profile with substitutions
-	Apply anonymous comment profile
+Core functionality and flags:
+	Call up named profile
+		--profile PROFILE
+	Create anonymous comment profile	
+		--tab, -t, TAB_SIZE
+		--width, -w LINE_WIDTH
+		--top_begin, -tb TOP_BEGIN
+		--top_fill, -tf TOP_FILL
+		--top_end, -te TOP_END
+		--left_wall, -lw LEFT_WALL
+		--right_wall, -rw RIGHT_WALL
+		--bottom_begin, -bb BOTTOM_BEGIN
+		--bottom_fill, -bf BOTTOM_FILL
+		--bottom_end, -be BOTTOM_END
+		--magic_number, -mn MAGIC_NUMBER
+	Substitue fields in named comment profile
+		(Any explicitly set fields are substituted
+		 in the currently loaded profile.)
 	Store named comment profile with substitutions
-		--store_as, --in_place
+		--in_place
+	Load a license
+		--license IMPORTED_LICENSE_BY_NAME
+		--license_file ANY_FILE
+	Apply currently loaded comment profile and license
+		--apply_to SOURCE [SOURCE ...]
 	Associate file name suffix to comment profile
-	Install license
+		--add_suffix SUFFIX [SUFFIX ...]
+	Disassociate file name suffix from comment profile
+		--del_suffix SUFFIX [SUFFIX ...]
+	Ingest license
+		--import LICENSE LICENSE_NAME
+	Rename license
+		--rename LICENSE LICENSE_NAME
 	Set default license
+		--default license LICENSE_NAME
+	Set default copyright holders
+		--default copyright_holders COPYRIGHT_HOLDER [COPYRIGHT_HOLDER ...]
+	Set default company name
+		--default company COMPANY_NAME
+	Set one time year, company or list of copyright holders
+		--year YEAR
+		--company COMPANY_NAME
+		--copyright_holder COPYRIGHT_HOLDER [COPYRIGHT_HOLDER]
+	Set value for text substitution of brocketed strings
+		--value OLD NEW
+			if default, store as default
+	Set default copyright holder
+		--default copyright_holder COPYRIGHT_HOLDER [COPYRIGHT_HOLDER ...]
+		--default add_holder COPYRIGHT_HOLDER [COPYRIGHT_HOLDER]
+		--default
 	View 
 		* list of defaults
-	 	* comment profiles
+	 	* comment profiles (names)
 	 	* suffix associations
-		* profile with sample text
-			* lorem ipsum
+		* sample of profile with text
 			* specific license
+			* default license
+			*lorem ipsum
+		* imported licenses (names)
+		--view
+			defaults
+			profiles
+			suffixes
+			sample PROFILE [LICENSE]
 	
 Additional functionality:
 	Fill in fields like date and copyright holder(s)
 		Fields in license are:
 			<year>
+				populated from commandline if possible
 				automatically populated
 			<copyright holders>
 				populated from commandline if possible
