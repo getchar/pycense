@@ -1,0 +1,53 @@
+Flags:
+	Create named comment profile
+	Apply named comment profile
+	Apply named comment profile with substitutions
+	Apply anonymous comment profile
+	Store named comment profile with substitutions
+		--store_as, --in_place
+	Associate file name suffix to comment profile
+	Install license
+	Set default license
+	View 
+		* list of defaults
+	 	* comment profiles
+	 	* suffix associations
+		* profile with sample text
+			* lorem ipsum
+			* specific license
+	
+Additional functionality:
+	Fill in fields like date and copyright holder(s)
+		Fields in license are:
+			<year>
+				automatically populated
+			<copyright holders>
+				populated from commandline if possible
+				populated from defaults if possible
+			<foo>
+				if foo is given a value in command line
+		Brocketed strings in license must be escaped with '\'
+			* can be escaped with '\'
+			* number of backslashes / 2 will be displayed
+			  and brocketed string is literal if
+			  number of backslashes % 2 == 1
+
+Workflow:
+	At most one comment profile can be on the table per instance
+		* can be drawn from archives by name
+		* can be an anonymous profile based on arguments
+		* can be named profile modified with arguments
+		* can be stored with any name
+			* in_place shortcut
+		* can be associated with any group of suffixes
+		* can be disassociated from any group of suffixes
+	At most one license can be on the table per instance
+		* can be ingested from anywhere on the computer
+		* can be taken from license file
+		* can be stored under a different name
+		* default will be drawn if possible
+		* if no license selected, will not write to file
+			unless special flag set, in which case blank
+
+	Any number of source files can be on the table per instance
+		* all will have same comment profile and licesne

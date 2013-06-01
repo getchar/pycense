@@ -9,7 +9,8 @@ from pprint import pprint
 settings_abbrevs = {"tb": "top_begin", "tf": "top_fill", "te": "top_end",
                     "tl": "top_ljust", "lw": "left_wall", "rw": "right_wall",
                     "bb": "bottom_begin", "bf": "bottom_fill", 
-                    "be": "bottom_end", "bl": "bottom_ljust", "w": "width"}
+                    "be": "bottom_end", "bl": "bottom_ljust", "w": "width"
+                    "t": "tab", "mn": "magic_number"}
 
 class commentator:
     """Class for generating boxed comments according to a specifications 
@@ -23,7 +24,12 @@ class commentator:
       end of the string it creates.
     left_wall, right_wall: vertical boundaries around comment region.
     bottom_begin, bottom_fill, bottom_end, bottom_fill: behave like
-      their counterparts on top."""
+      their counterparts on top.
+    width: the maximum width of a line (may be adjusted to suit other
+      variables).
+    tab: distance between tab stops.  Shouldn't be needed.
+    magic_number: if present, comment must be inserted after this.  If
+      absent, comment should be first thing in the file."""
 
     def __init__(self, settings = ""):
         """Initialize a commentator according to settings string."""

@@ -4,6 +4,9 @@ import os
 from objects import commentator
 import argparse
 
+cwd = os.path.dirname(os.path.abspath(__file__))
+print cwd
+
 parser = argparse.ArgumentParser(description = \
                                      ("A friendly and modifiable program for "
                                       "slipping copyright notices into your "
@@ -12,5 +15,5 @@ parser = argparse.ArgumentParser(description = \
 settings = "{'tb': '#', 'tf': '#', 'lw': '# ', 'bb': '#', 'bf': '#', 'w': 50}"
 com = commentator()
 com.swap_in(settings)
-text = open("mit_license.txt", "r").read()
+text = open("licenses/lorem.txt", "r").read()
 print com.get_boxed(text)
