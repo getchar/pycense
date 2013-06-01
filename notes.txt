@@ -41,6 +41,10 @@ Core functionality and flags:
 		--default copyright_holders COPYRIGHT_HOLDER [COPYRIGHT_HOLDER ...]
 	Set default company name
 		--default company COMPANY_NAME
+	Set default tab:
+		--default_tab
+	Set default width:
+		--default_width
 	Set one time year, company or list of copyright holders
 		--year YEAR
 		--company COMPANY_NAME

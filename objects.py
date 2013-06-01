@@ -197,12 +197,17 @@ class LicenseTypeAction(argparse.Action):
             opt = "license"
         if opt == "lf":
             opt = "license_file"
-        try:
-            namespace.license_type.append(values)
+        if hasattr(namespace, "license_path"):
             message = ("It is impossible to combine --license (-l) with "
-                       "--license_file (-lf)")
-            print message
+                       "--license_path (-lf)")
             raise argparse.ArgumentError(None, message)
-        except AttributeError:
-            setattr(namespace, "license_type", [values])
+        else:
+            if opt == "license":
+                setattr(namespace, "license_name", values)
+                setattr(namespace, "license_path", 
+                        "licenses/%s.txt" % (values))
+            else:
+                seattr(namespace, "license_name", None)
+                seattr(namespace, "license_path", values)
+
     

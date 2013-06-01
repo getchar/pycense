@@ -99,20 +99,23 @@ parser.add_argument("--default_company", "-dc", type = str,
 parser.add_argument("--default_copyright_holders", "-dh", type = str,
                     nargs = "+", metavar = "COPYRIGHT_HOLDER",
                     help = ("set list of default copyright holders"))
-
-
+parser.add_argument("--default_tab", "-dt", type = int,
+                    help = ("default tab width to use in all source code"))
+parser.add_argument("--default_width", "-dw", type = int,
+                    help = ("default line width to use in all source code"))
 args = parser.parse_args()
-pprint(vars(args))
+
 try:
-    for s in args.settings:
-        print s, args.settings[s]
     settings = str(args.settings)
 except AttributeError:
     settings = str(d_settings)
+# create Commentator, either from explicit settings or defauls
 com = obj.Commentator(settings)
 pprint(vars(com))
 text = open("licenses/mit_license.txt", "r").read()
-print com.get_boxed(text)
+#print com.get_boxed(text)
+print args.license_name
+print args.license_path
 
 
 # conflicts: (license, license_file)! (store_as, store_in_place)?
