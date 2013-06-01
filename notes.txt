@@ -21,7 +21,7 @@ Core functionality and flags:
 	Store comment profile under a new name
 		--store_as NAME
 	Rename a named comment profile
-		--rename OLD NEW
+		--rename_profile OLD NEW
 	Load a license
 		--license IMPORTED_LICENSE_BY_NAME
 		--license_file ANY_FILE
@@ -34,7 +34,7 @@ Core functionality and flags:
 	Ingest license
 		--import LICENSE LICENSE_NAME
 	Rename license
-		--rename LICENSE LICENSE_NAME
+		--rename_license LICENSE LICENSE_NAME
 	Set default license
 		--default license LICENSE_NAME
 	Set default copyright holders

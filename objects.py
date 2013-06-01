@@ -3,6 +3,7 @@
 import sys
 from textwrap import wrap
 from itertools import izip
+import argparse
 
 from pprint import pprint
 
@@ -173,4 +174,35 @@ class Commentator:
         return str(vars(self))
 
 class SetAction(argparse.Action):
-    pass
+    """Class to handle applying settings from the command line, simplifying
+    the process of retreiving settings that have been explicitly set."""
+
+    def __call__(self, parser, namespace, values, option_string):
+        opt = option_string.lstrip("-")
+        if opt in settings_abbrevs:
+            opt = settings_abbrevs[opt]
+        try:
+            namespace.settings[opt] = values
+        except AttributeError:
+            setattr(namespace, "settings", parser.d_settings)
+            namespace.settings[opt] = values
+
+class LicenseTypeAction(argparse.Action):
+    """Class of action for recording whether to use a named license or a 
+    license drawn from a file identified by full or relative file path."""
+
+    def __call__(self, parser, namespace, values, option_string):
+        opt = option_string.lstrip("-")
+        if opt == "l":
+            opt = "license"
+        if opt == "lf":
+            opt = "license_file"
+        try:
+            namespace.license_type.append(values)
+            message = ("It is impossible to combine --license (-l) with "
+                       "--license_file (-lf)")
+            print message
+            raise argparse.ArgumentError(None, message)
+        except AttributeError:
+            setattr(namespace, "license_type", [values])
+    
