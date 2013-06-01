@@ -27,10 +27,9 @@ Additional functionality:
 			<foo>
 				if foo is given a value in command line
 		Brocketed strings in license must be escaped with '\'
-			* can be escaped with '\'
-			* number of backslashes / 2 will be displayed
-			  and brocketed string is literal if
-			  number of backslashes % 2 == 1
+			* '\' can be escaped with '\'
+			* in general, halve the number of backslashes
+			  and perform substitution if there is an even number
 
 Workflow:
 	At most one comment profile can be on the table per instance
@@ -48,6 +47,5 @@ Workflow:
 		* default will be drawn if possible
 		* if no license selected, will not write to file
 			unless special flag set, in which case blank
-
 	Any number of source files can be on the table per instance
 		* all will have same comment profile and licesne
