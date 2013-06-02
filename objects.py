@@ -210,4 +210,12 @@ class LicenseTypeAction(argparse.Action):
                 seattr(namespace, "license_name", None)
                 seattr(namespace, "license_path", values)
 
-    
+class ValueAdded(argparse.Action):
+    """Class of action to add substitution scheme for current license."""
+
+    def __call__(self, parser, namespace, values, option_string):
+        old, new = values
+        try:
+            namespace.subs[old] = new
+        except AttributeError:
+            setattr(namespace, "subs", {"old": "new"})
