@@ -226,11 +226,14 @@ if args.apply_to or "sample" in args.must_see:
                         args.company if args.company else d_company))
     args.value.append(("year", 
                        args.year if args.year else datetime.now().year))
+    # an even number of backslashes doesn't affect substitution
     pieces = license_text.split("\\\\")
     for old, new in args.value:
+        # make all substitutions unless brocket preceded by a backslash
         pieces = [re.sub(r"(?<!\\)<%s>" % old, str(new), piece) 
                   for piece in pieces]
-    license_text = "".join(pieces)
+    # replace doubled backslashes, throughing first of every pair away
+    license_text = "\\".join(pieces)
 
 must_store = args.store_as or args.store_in_place
 if args.apply_to or "sample" in args.must_see or must_store:
