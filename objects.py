@@ -33,7 +33,7 @@ class Commentator:
     magic_number: if present, comment must be inserted after this.  If
       absent, comment should be first thing in the file."""
 
-    def __init__(self, settings = ""):
+    def __init__(self, settings = {}):
         """Initialize a commentator according to settings string."""
         self.width = 1 # needs to be an int >= 1 no matter what
         self.swap_in(settings)
@@ -54,12 +54,8 @@ class Commentator:
         delim: character that separates settings from values as well as 
           setting/value pairs in the settings string.  delim must not appear
           in either the name of a setting or the value presented."""
-        if not settings:
-            return
-        temp = eval(settings)
-        assert type(temp) is dict
-        for name in temp:
-            self.set_value(name, temp[name])
+        for name in settings:
+            self.set_value(name, settings[name])
 
     def set_value(self, name, value):
         """Set a single value; easier to read for humans; used for tests."""
@@ -171,15 +167,14 @@ class Commentator:
         return "\n".join(comment_lines)
 
     def get_storage(self):
-        """Generate string to store settings as dictionary for later use."""
-        return str(vars(self))
+        """Generate dictionary to store current settings."""
+        return vars(self)
 
 class SetAction(argparse.Action):
     """Class to handle applying settings from the command line, simplifying
     the process of retreiving settings that have been explicitly set."""
 
     def __call__(self, parser, namespace, values, option_string):
-        pprint(vars(namespace))
         opt = option_string.lstrip("-")
         if opt in settings_abbrevs:
             opt = settings_abbrevs[opt]
@@ -199,16 +194,17 @@ class LicenseTypeAction(argparse.Action):
             raise argparse.ArgumentError(None, message)
         else:
             setattr(namespace, "license_loaded", True)
+            namespace.license = values
 
 class ValueAdded(argparse.Action):
     """Class of action to add substitution scheme for current license."""
 
     def __call__(self, parser, namespace, values, option_string):
-        old, new = values
-        try:
-            namespace.subs[old] = new
-        except AttributeError:
-            setattr(namespace, "subs", {"old": "new"})
+        if len(values) % 2:
+            message = ("You must provide a filepath and a license name "
+                       "for each license you wish to import.")
+            raise argparse.ArgumentError(None, message)
+        namespace.value.extend(zip(values[::2], values[1::2]))
 
 class SeeSomeAction(argparse.Action):
     """Class of action for when see is called, to verify that any further 
@@ -258,7 +254,29 @@ class DefaultAction(argparse.Action):
         opt = opt.split("-d")[-1]
         if opt in table:
             opt = table[opt]
-        try:
-            namespace.defaults[opt] = values
-        except AttributeError:
-            setattr(namespace, "defaults", {opt: values})
+        namespace.defaults.append((opt, values))
+
+class RenameAction(argparse.Action):
+    """Class of action for accumulating name change requests for
+    profiles and licenses."""
+
+    def __call__(self, parser, namespace, values, option_string):
+        opt = option_string.lstrip("-")
+        if opt == "rl":
+            opt = "license"
+        elif opt == "rp":
+            opt = "profile"
+        else:
+            opt = opt.split("_")[1]
+        if len(values) % 2:
+            message = ("You must provide an old name and a new name "
+                       "for ever %s you want to rename." % (opt))
+            raise argparse.ArgumentError(None, message)
+        accumulator = "rename_%s" % (opt)
+        current = getattr(namespace, accumulator)
+        for old, new in izip(values[::2], values[1::2]):
+            current.append((old, new))
+        print current
+        setattr(namespace, accumulator, current)
+
+            

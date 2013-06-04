@@ -4,9 +4,10 @@ import os
 import objects as obj
 import argparse
 import ConfigParser
-import os
+import re
 import shutil
 from pprint import pformat, pprint
+from datetime import datetime
 
 def name_to_path(name):
     """Creates a path to a license out of its name."""
@@ -22,7 +23,7 @@ sample_text = "Software license information goes here."
 
 d_license = config.get("defaults", "license")
 d_company = config.get("defaults", "company")
-d_copyright_holders = eval(config.get("defaults", "copyright_holders"))
+d_owner = config.get("defaults", "owner")
 d_settings = {"tab": config.getint("defaults", "tab"),
               "width": config.getint("defaults", "width"),
               "magic_number": config.get("defaults", "magic_number")}
@@ -93,7 +94,7 @@ parser.add_argument("--magic_number", "-mn", type = str,
                             "list of optional flags) describing any text "
                             "that has to be skipped before inserting the "
                             "commented license"))
-# storing named entities
+# storing and managing named entities
 parser.add_argument("--store_in_place", "-sip", action = 'store_true', 
                     default = False,
                     help = ("overwrite the named comment profile currently "
@@ -101,22 +102,24 @@ parser.add_argument("--store_in_place", "-sip", action = 'store_true',
 parser.add_argument("--store_as", "-sa", type = str, metavar = "NAME",
                     help = ("name to store currently loaded comment "
                             "profile under"))
-parser.add_argument("--rename_profile", "-rp", type = str, nargs = 2,
-                    metavar = ("OLD", "NEW"),
+parser.add_argument("--rename_profile", "-rp", type = str, nargs = "+",
+                    metavar = ("OLD", "NEW"), default = [],
+                    action = obj.RenameAction,
                     help = ("rename a named profile"))
+parser.add_argument("--remove_profile", "-rmp", type = str, nargs = "+",
+                    metavar = "PROFILE", default = [],
+                    help = "remove these profiles from the library")
 parser.add_argument("--import_license", "-il", type = str, nargs = "+",
                     action = obj.ImportAction, dest = "imports", default = [],
                     metavar = ("FILE", "LICENSE_NAME"), 
                     help = ("import a file into the license library"))
-parser.add_argument("--rename_license", "-rl", type = str, nargs = 2,
-                    metavar = ("OLD", "NEW"),
+parser.add_argument("--rename_license", "-rl", type = str, nargs = "+",
+                    metavar = ("OLD", "NEW"), default = [],
+                    action = obj.RenameAction,
                     help = ("rename a named license"))
 parser.add_argument("--remove_license", "-rml", type = str, nargs = "+",
                     metavar = "LICENSE", default = [],
                     help = "remove these licenses from the library")
-parser.add_argument("--remove_profile", "-dp", type = str, nargs = "+",
-                    metavar = "PROFILE", default = [],
-                    help = "remove these profiles from the library")
 
 # setting defaults
 parser.add_argument("--default_license", "-dl", type = str,
@@ -150,13 +153,13 @@ parser.add_argument("--company", "-c", type = str,
                     help = ("replace <company> with this once"))
 parser.add_argument("--owner", "-o", type = str,
                     help = ("replace <owner> with this once"))
-parser.add_argument("--value", "-v", type = str, nargs = 2,
+parser.add_argument("--value", "-v", type = str, nargs = '+', default = [],
                     action = obj.ValueAdded, metavar = ("OLD", "NEW"),
                     help = ("replace <OLD> with NEW once"))
 
 # produce commented licenses and either write to file or view
 parser.add_argument("--apply_to", "-a", type = str, nargs = "+",
-                    metavar = "SOURCE",
+                    metavar = "SOURCE", default = [],
                     help = ("a list of source files to apply the current "
                             "settings to"))
 parser.add_argument("--see", "-s", type = str, action = obj.SeeSomeAction,
@@ -173,25 +176,36 @@ for toremove in args.remove_license:
     try:
         os.remove(name_to_path(toremove))
     except OSError as err:
-        # fail silently unless --silent, --verbose  support added
-        pass
-if args.remove_profile:
-    for toremove in args.remove_profile:
-        try:
-            assert config.remove_option("profiles", toremove) == True
-        except AssertionError:
+        if err.errno == 2:
             # fail silently unless --silent, --verbose  support added
             pass
+for toremove in args.remove_profile:
+    try:
+        assert config.remove_option("profiles", toremove) == True
+    except AssertionError:
+        # fail silently unless --silent, --verbose  support added
+        pass
 
-# import stuff
+# import and rename stuff
 for filepath, newname in args.imports:
     shutil.copy(filepath, name_to_path(newname))
+for old, new in args.rename_profile:
+    olddata = config.get("profiles", old)
+    if olddata:
+        config.set("profiles", new, config.get("profiles", old))
+        config.remove_option("profiles", old)
+for old, new in args.rename_license:
+    try:
+        os.rename(name_to_path(old), name_to_path(new))
+    except OSError as err:
+        if err.errno == 2:
+            pass
         
 # adjust defaults
-for default in args.defaults:
-    config.set("defaults", default, args.defaults[default])
+for name, value in args.defaults:
+    config.set("defaults", name, value)
 
-
+# load license and comment profile if needed
 if args.apply_to or "sample" in args.must_see:
     # load license
     if not args.license:
@@ -202,9 +216,27 @@ if args.apply_to or "sample" in args.must_see:
             license_text = open(license_file, "r").read().rstrip("\n")
         except:
             print "No license named '%s' found" % (args.license)
+            os._exit(1)
+    else:
+        print "No license known or knowable."
+        os._exit(1)
+    # swap in replacements in the text
+    args.value.append(("owner", args.owner if args.owner else d_owner))
+    args.value.append(("company", 
+                        args.company if args.company else d_company))
+    args.value.append(("year", 
+                       args.year if args.year else datetime.now().year))
+    pieces = license_text.split("\\\\")
+    for old, new in args.value:
+        pieces = [re.sub(r"(?<!\\)<%s>" % old, str(new), piece) 
+                  for piece in pieces]
+    license_text = "".join(pieces)
 
+must_store = args.store_as or args.store_in_place
+if args.apply_to or "sample" in args.must_see or must_store:
     # create Commentator
     if args.profile:
+        # load settings from named profile
         try:
             settings = eval(config.get("profiles", str(args.profile)))
         except ConfigParser.NoOptionError:
@@ -213,14 +245,19 @@ if args.apply_to or "sample" in args.must_see:
     else:
         settings = {}
     for setting in args.settings:
-        # insert all the settings from the command line
+        # swap in any settings explicitly set in the cmdline
         settings[setting] = args.settings[setting]
     for setting in d_settings:
+        # only swap in default settings if not set elsewhere
         if setting not in settings:
             settings[setting] = d_settings[setting]
-    com = obj.Commentator(str(settings))
+    com = obj.Commentator(settings)
 
 # manage named profiles
+if args.store_in_place:
+    config.set("profiles", args.profile, com.get_storage())
+if args.store_as:
+    config.set("profiles", args.store_as, com.get_storage())
 
 # see what must be seen
 if "defaults" in args.must_see:
@@ -238,6 +275,10 @@ if "profiles" in args.must_see:
             print "\t%s" % (line)
 if "sample" in args.must_see:
     print com.get_boxed(license_text)
+
+for filename in args.apply_to:
+    # FIXME
+    pass
 
 with open(config_file, "wb") as fp:
     config.write(fp)
