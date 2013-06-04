@@ -5,7 +5,6 @@ import objects as obj
 import argparse
 import ConfigParser
 import os
-import re
 import shutil
 from pprint import pformat
 
@@ -218,11 +217,11 @@ if "profiles" in args.must_see:
     for var, val in config.items("profiles"):
         print "profile %s" % (var)
         # get rid of braces
-        dicstr = pformat(eval(val))
-        dicstr = " " + dicstr[1:-1]
+        dicstr = pformat(eval(val)).replace("{", " ")[:-1]
         for line in dicstr.split("\n"):
-            # get rid of single quotes
-            line = re.subn("'", "", line, count = 2)[0]
+            # get rid of single quotes around the data member names
+            line = line.replace("'", "")
+            line = line.replace("'", "")
             print "\t%s" % (line)
 if "sample" in args.must_see:
     print com.get_boxed(license_text)
