@@ -6,7 +6,7 @@ import argparse
 import ConfigParser
 import os
 import shutil
-from pprint import pformat
+from pprint import pformat, pprint
 
 def name_to_path(name):
     """Creates a path to a license out of its name."""
@@ -45,7 +45,7 @@ parser.add_argument("--license", "-l", type = str,
 
 # settings
 parser.add_argument("--tab", "-t", type = int, action = obj.SetAction,
-                    default = d_settings["tab"],
+                    dest = "settings", default = {},
                     help = ("tab width of document (there shoulldn't be any "
                             "tabs in your license"))
 parser.add_argument("--width", "-w", type = int, action = obj.SetAction,
@@ -105,7 +105,7 @@ parser.add_argument("--rename_profile", "-rp", type = str, nargs = 2,
                     metavar = ("OLD", "NEW"),
                     help = ("rename a named profile"))
 parser.add_argument("--import_license", "-il", type = str, nargs = "+",
-                    action = obj.ImportAction,
+                    action = obj.ImportAction, dest = "imports", default = [],
                     metavar = ("FILE", "LICENSE_NAME"), 
                     help = ("import a file into the license library"))
 parser.add_argument("--rename_license", "-rl", type = str, nargs = 2,
@@ -121,21 +121,25 @@ parser.add_argument("--remove_profile", "-dp", type = str, nargs = "+",
 # setting defaults
 parser.add_argument("--default_license", "-dl", type = str,
                     metavar = "LICENSE", action = obj.DefaultAction,
+                    dest = "defaults", default = [],
                     help = ("set a previously imported license as default"))
 parser.add_argument("--default_company", "-dc", type = str,
                     metavar = "COMPANY", action = obj.DefaultAction,
+                    dest = "defaults", default = [],
                     help = ("set default company"))
 parser.add_argument("--default_owner", "-do", type = str,
                     metavar = "OWNER", action = obj.DefaultAction,
+                    dest = "defaults", default = [],
                     help = ("set list of default copyright holders"))
-parser.add_argument("--default_tab", "-dt", type = int,
-                    action = obj.DefaultAction,
+parser.add_argument("--default_tab", "-dt", type = int, dest = "defaults",
+                    default = [], action = obj.DefaultAction, 
                     help = ("default tab width to use in all source code"))
-parser.add_argument("--default_width", "-dw", type = int,
-                    action = obj.DefaultAction,
+parser.add_argument("--default_width", "-dw", type = int, dest = "defaults",
+                    action = obj.DefaultAction, default = [],
                     help = ("default line width to use in all source code"))
 parser.add_argument("--default_magic_number", "-dmn", type = str, 
-                    action = obj.DefaultAction, nargs = "+",
+                    action = obj.DefaultAction, nargs = "+", dest = "defaults",
+                    default = [],
                     help = ("set default magic number; added for "
                             "completeness; you probably shouldn't use it"))
 
@@ -156,7 +160,8 @@ parser.add_argument("--apply_to", "-a", type = str, nargs = "+",
                     help = ("a list of source files to apply the current "
                             "settings to"))
 parser.add_argument("--see", "-s", type = str, action = obj.SeeSomeAction,
-                    nargs = "+", metavar = "SEEABLE",
+                    nargs = "+", metavar = "SEEABLE", dest = "must_see",
+                    default = [],
                     help = ("see some information; options include defaults, "
                             "profiles, and sample, which means that the "
                             "currently selected license will be printed to the"
@@ -179,35 +184,43 @@ if args.remove_profile:
             pass
 
 # import stuff
-if hasattr(args, "imports"):
-    for filepath, newname in args.imports:
-        shutil.copy(filepath, name_to_path(newname))
+for filepath, newname in args.imports:
+    shutil.copy(filepath, name_to_path(newname))
         
 # adjust defaults
-if hasattr(args, "defaults"):
-    for default in args.defaults:
-        config.set("defaults", default, args.defaults[default])
+for default in args.defaults:
+    config.set("defaults", default, args.defaults[default])
 
-# load license
-if not args.license and (args.apply_to or "sample" in args.must_see): 
-    args.license = d_license
-if args.license:
-    license_file = name_to_path(args.license)
-    try:
-        license_text = open(license_file, "r").read().rstrip("\n")
-    except:
-        print "No license named '%s' found" % (args.license)
 
-# create Commentator
-try:
-    settings = str(args.settings)
-except AttributeError:
-    settings = str(d_settings)
-    if hasattr(args, "settings"):
-        for setting in args.settings:
-            # insert all the settings from the command line
-            settings[setting] = args.settings[settings]
-com = obj.Commentator(settings)
+if args.apply_to or "sample" in args.must_see:
+    # load license
+    if not args.license:
+        args.license = d_license
+    if args.license:
+        license_file = name_to_path(args.license)
+        try:
+            license_text = open(license_file, "r").read().rstrip("\n")
+        except:
+            print "No license named '%s' found" % (args.license)
+
+    # create Commentator
+    if args.profile:
+        try:
+            settings = eval(config.get("profiles", str(args.profile)))
+        except ConfigParser.NoOptionError:
+            print "No settings profile named %s" % (args.profile)
+            os._exit(1)
+    else:
+        settings = {}
+    for setting in args.settings:
+        # insert all the settings from the command line
+        settings[setting] = args.settings[setting]
+    for setting in d_settings:
+        if setting not in settings:
+            settings[setting] = d_settings[setting]
+    com = obj.Commentator(str(settings))
+
+# manage named profiles
 
 # see what must be seen
 if "defaults" in args.must_see:

@@ -179,14 +179,14 @@ class SetAction(argparse.Action):
     the process of retreiving settings that have been explicitly set."""
 
     def __call__(self, parser, namespace, values, option_string):
+        pprint(vars(namespace))
         opt = option_string.lstrip("-")
         if opt in settings_abbrevs:
             opt = settings_abbrevs[opt]
         try:
             namespace.settings[opt] = values
         except AttributeError:
-            setattr(namespace, "settings", parser.d_settings)
-            namespace.settings[opt] = values
+            setattr(namespace, "settings", {opt: values})
 
 class LicenseTypeAction(argparse.Action):
     """Class of action for recording whether to use a named license or a 
