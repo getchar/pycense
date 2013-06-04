@@ -1,6 +1,7 @@
 #! /usr/bin/python
 
 import sys
+import os
 from textwrap import wrap
 from itertools import izip
 import argparse
@@ -193,22 +194,11 @@ class LicenseTypeAction(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string):
         opt = option_string.lstrip("-")
-        if opt == "l":
-            opt = "license"
-        if opt == "lf":
-            opt = "license_file"
-        if hasattr(namespace, "license_path"):
-            message = ("It is impossible to combine --license (-l) with "
-                       "--license_path (-lf)")
+        if hasattr(namespace, "license_loaded"):
+            message = "You cannot load more than one license at a time."
             raise argparse.ArgumentError(None, message)
         else:
-            if opt == "license":
-                setattr(namespace, "license_name", values)
-                setattr(namespace, "license_path", 
-                        "licenses/%s.txt" % (values))
-            else:
-                seattr(namespace, "license_name", None)
-                seattr(namespace, "license_path", values)
+            setattr(namespace, "license_loaded", True)
 
 class ValueAdded(argparse.Action):
     """Class of action to add substitution scheme for current license."""
@@ -219,3 +209,56 @@ class ValueAdded(argparse.Action):
             namespace.subs[old] = new
         except AttributeError:
             setattr(namespace, "subs", {"old": "new"})
+
+class SeeSomeAction(argparse.Action):
+    """Class of action for when see is called, to verify that any further 
+    arguments are valid and to accumulate them."""
+
+    def __call__(self, parser, namespace, values, option_string):
+        unseeables = ", ".join([s for s in values if s not in parser.seeables])
+        if unseeables:
+            message = "%s not seeable" % unseeables
+            raise argparse.ArgumentError(None, message)
+        if "all" in values:
+            values = parser.seeables[:]
+        try:
+            namespace.must_see.extend(values)
+        except AttributeError:
+            setattr(namespace, "must_see", values[:])
+            
+            
+class ImportAction(argparse.Action):
+    """Class of action to accumulate import requests."""
+
+    def __call__(self, parser, namespace, values, option_string):
+        if len(values) % 2:
+            message = ("You must provide a filepath and a license name "
+                       "for each license you wish to import.")
+            raise argparse.ArgumentError(None, message)
+        if not hasattr(namespace, "imports"):
+            setattr(namespace, "imports", [])
+        no_are = []
+        for path, name in izip(values[::2], values[1::2]):
+            if not os.path.exists(path):
+                nohay.append(path)
+            namespace.imports.append((path, name))
+        if no_are:
+            no_are = ", ".join(nohay)
+            message = "%s not found" % (no_are)
+            raise argparse.ArgumentError(None, message)
+
+class DefaultAction(argparse.Action):
+    """Class of action for accumulating default change requests."""
+
+    def __call__(self, parser, namespace, values, option_string):
+        table = {"l": "license", "c": "company", "o": "owner", "t": "tab",
+                 "w": "width", "mn": "magic_number"}
+        opt = option_string
+        opt = opt.split("--default_")[-1]
+        opt = opt.split("-d")[-1]
+        if opt in table:
+            opt = table[opt]
+        try:
+            namespace.defaults[opt] = values
+        except AttributeError:
+            setattr(namespace, "defaults", {opt: values})

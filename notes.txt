@@ -26,17 +26,15 @@ Core functionality and flags:
    X --rename_profile OLD NEW
   Load a license
    X --license IMPORTED_LICENSE_BY_NAME
-   X --license_file ANY_FILE
+   # excised! # X --license_file ANY_FILE
   Apply currently loaded comment profile and license
    X --apply_to SOURCE [SOURCE ...]
-  Associate file name suffix to comment profile
-   X --add_suffix SUFFIX [SUFFIX ...]
-  Disassociate file name suffix from comment profile
-   X --del_suffix SUFFIX [SUFFIX ...]
   Ingest license
    X --import LICENSE LICENSE_NAME
   Rename license
    X --rename_license LICENSE LICENSE_NAME
+  Delete license
+   X --delete_license LICENSE [LICENSE ...]
   Set default license
    X --default license LICENSE_NAME
   Set default copyright holders
@@ -60,17 +58,16 @@ Core functionality and flags:
   View 
     * list of defaults
      * comment profiles (names)
-     * suffix associations
     * sample of profile with text
       * specific license
       * default license
       *lorem ipsum
     * imported licenses (names)
     --view
+      all
       defaults
       profiles
-      suffixes
-      sample PROFILE [LICENSE]
+      sample (current profile and license)
   
 Additional functionality:
   Fill in fields like date and copyright holder(s)
@@ -95,8 +92,6 @@ Workflow:
     * can be named profile modified with arguments
     * can be stored with any name
       * in_place shortcut
-    * can be associated with any group of suffixes
-    * can be disassociated from any group of suffixes
   At most one license can be on the table per instance
     * can be ingested from anywhere on the computer
     * can be taken from license file
