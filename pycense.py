@@ -232,6 +232,8 @@ if args.apply_to or "sample" in args.must_see:
         # make all substitutions unless brocket preceded by a backslash
         pieces = [re.sub(r"(?<!\\)<%s>" % old, str(new), piece) 
                   for piece in pieces]
+    pieces = [re.sub(r"\\(?P<brocketed>\<.*?\>)", "\g<brocketed>", piece)
+              for piece in pieces]
     # replace doubled backslashes, throughing first of every pair away
     license_text = "\\".join(pieces)
 
