@@ -6,6 +6,7 @@ import argparse
 import ConfigParser
 import re
 import shutil
+import tempfile
 from pprint import pformat, pprint
 from datetime import datetime
 
@@ -24,9 +25,10 @@ sample_text = "Software license information goes here."
 d_license = config.get("defaults", "license")
 d_company = config.get("defaults", "company")
 d_owner = config.get("defaults", "owner")
+d_editor = config.get("defaults", "editor")
 d_settings = {"tab": config.getint("defaults", "tab"),
               "width": config.getint("defaults", "width"),
-              "magic_number": config.get("defaults", "magic_number")}
+              "skip_line": config.getint("defaults", "skip_line")}
 seeables = ["all", "defaults", "profiles", "sample"]
 
 parser = argparse.ArgumentParser(description = \
@@ -50,50 +52,58 @@ parser.add_argument("--tab", "-t", type = int, action = obj.SetAction,
                     help = ("tab width of document (there shoulldn't be any "
                             "tabs in your license"))
 parser.add_argument("--width", "-w", type = int, action = obj.SetAction,
-                    default = d_settings["width"],
+                    default = d_settings["width"], dest = "settings", 
                     help = ("maximum line width in source code"))
 parser.add_argument("--top_begin", "-tb", type = str, action = obj.SetAction,
+                    dest = "settings", default = {},
                     help = ("start of string marking the uppoer boundary of "
                             "commented license"))
 parser.add_argument("--top_fill", "-tf", type = str, action = obj.SetAction,
+                    dest = "settings", default = {},
                     help = ("string to repeat along the upper boundary of "
                             "commented license"))
 parser.add_argument("--top_ljust", "-tl", type = str, action = obj.SetAction,
+                    dest = "settings", default = {},
                     help = ("whether to left justify the fill along the "
                             "upper boundary of the commented license; "
                             "use True or False"))
 parser.add_argument("--top_end", "-te", type = str, action = obj.SetAction,
+                    dest = "settings", default = {},
                     help = ("end of string marking the uppoer boundary of "
                             "commented license"))
 parser.add_argument("--left_wall", "-lw", type = str, action = obj.SetAction,
+                    dest = "settings", default = {},
                     help = ("left wall of commented license; surrounds "
                             "text of licesne; include any spaces desired as "
                             "buffer"))
 parser.add_argument("--right_wall", "-rw", type = str, action = obj.SetAction,
+                    dest = "settings", default = {},
                     help = ("right wall of commented license; surrounds "
                             "text of licesne; include any spaces desired as "
                             "buffer"))
-parser.add_argument("--bottom_begin", "-bb", type = str, 
-                    action = obj.SetAction,
+parser.add_argument("--bottom_begin", "-bb", type = str, dest = "settings", 
+                    default = {}, action = obj.SetAction,
                     help = ("start of string marking the lower boundary of "
                             "commented license"))
 parser.add_argument("--bottom_fill", "-bf", type = str, action = obj.SetAction,
+                    dest = "settings", default = {},
                     help = ("string to repeat along the lower boundary of "
                             "commented license"))
-parser.add_argument("--bottom_ljust", "-bl", type = str, 
-                    action = obj.SetAction,
+parser.add_argument("--bottom_ljust", "-bl", type = str, dest = "settings",
+                    default = {}, action = obj.SetAction,
                     help = ("whether to left justify the fill along the "
                             "lower boundary of the commented license; "
                             "use True or False"))
 parser.add_argument("--bottom_end", "-be", type = str, action = obj.SetAction,
+                    dest = "settings", default = {},
                     help = ("end of string marking the lower boundary of "
                             "commented license"))
-parser.add_argument("--magic_number", "-mn", type = str, 
-                    action = obj.SetAction, nargs = "+",
-                    help = ("python ready regular expression (including a "
-                            "list of optional flags) describing any text "
-                            "that has to be skipped before inserting the "
-                            "commented license"))
+parser.add_argument("--skip_line", "-sl", type = int, dest = "settings", 
+                    default = {}, action = obj.SetAction,
+                    help = ("number of lines to skip, if possible, "
+                            "before inserting the copyright notice; use this "
+                            "to hop over shebangs and other magic numbers"))
+
 # storing and managing named entities
 parser.add_argument("--store_in_place", "-sip", action = 'store_true', 
                     default = False,
@@ -120,6 +130,15 @@ parser.add_argument("--rename_license", "-rl", type = str, nargs = "+",
 parser.add_argument("--remove_license", "-rml", type = str, nargs = "+",
                     metavar = "LICENSE", default = [],
                     help = "remove these licenses from the library")
+parser.add_argument("--edit_license", "-el", type = str, nargs = "+",
+                    default = [],
+                    help = ("open up a license by name to edit using the "
+                            "editor specified on the command line or in the "
+                            "defaults; note that imports and renames are "
+                            "performed before editing"))
+parser.add_argument("--editor", "-e", type = str, default = d_editor,
+                    help = ("editor to use for editing the license this time; "
+                            "%s by defaults" % d_editor))
 
 # setting defaults
 parser.add_argument("--default_license", "-dl", type = str,
@@ -140,11 +159,15 @@ parser.add_argument("--default_tab", "-dt", type = int, dest = "defaults",
 parser.add_argument("--default_width", "-dw", type = int, dest = "defaults",
                     action = obj.DefaultAction, default = [],
                     help = ("default line width to use in all source code"))
-parser.add_argument("--default_magic_number", "-dmn", type = str, 
+parser.add_argument("--default_skip_line", "-dmn", type = str, 
                     action = obj.DefaultAction, nargs = "+", dest = "defaults",
                     default = [],
-                    help = ("set default magic number; added for "
+                    help = ("set default number of lines to skip; added for "
                             "completeness; you probably shouldn't use it"))
+parser.add_argument("--default_editor", "-de", type = str,
+                    action = obj.DefaultAction, dest = "defaults",
+                    help = ("text editor to use when opening licenses to "
+                            "edit."))
 
 # set one time substitutions
 parser.add_argument("--year", "-y", type = str,
@@ -204,6 +227,18 @@ for old, new in args.rename_license:
 # adjust defaults
 for name, value in args.defaults:
     config.set("defaults", name, value)
+
+# edit licenses
+for license_file in args.edit_license:
+    path = name_to_path(license_file)
+    if not args.editor:
+        print "No editor designated"
+        os._exit(1)
+    if os.path.exists(path):
+        os.system("%s %s" % (args.editor, path))
+    else:
+        print "No license named %s found." % (license_file)
+        os._exit(1)
 
 # load license and comment profile if needed
 if args.apply_to or "sample" in args.must_see:
@@ -281,10 +316,22 @@ if "profiles" in args.must_see:
 if "sample" in args.must_see:
     print com.get_boxed(license_text)
 
+# modify the files
 for filename in args.apply_to:
-    # FIXME
-    pass
+    fin = open(filename, "r")
+    fout = tempfile.NamedTemporaryFile(prefix = "tmp%s" % filename, dir = ".",
+                                      suffix = "txt", delete = False)
+    for i in range(com.skip_line):
+        line = fin.readline()
+        fout.write(line)
+    fout.write(com.get_boxed(license_text) + "\n")
+    for line in fin.readlines():
+        fout.write(line)
+    fout.flush()
+    os.rename(fout.name, filename)
+    fout.close
 
+# store the config
 with open(config_file, "wb") as fp:
     config.write(fp)
 

@@ -12,7 +12,7 @@ settings_abbrevs = {"tb": "top_begin", "tf": "top_fill", "te": "top_end",
                     "tl": "top_ljust", "lw": "left_wall", "rw": "right_wall",
                     "bb": "bottom_begin", "bf": "bottom_fill", 
                     "be": "bottom_end", "bl": "bottom_ljust", "w": "width",
-                    "t": "tab", "mn": "magic_number"}
+                    "t": "tab", "sl": "skip_line"}
 
 class Commentator:
     """Class for generating boxed comments according to a specifications 
@@ -35,7 +35,7 @@ class Commentator:
 
     def __init__(self, settings = {}):
         """Initialize a commentator according to settings string."""
-        self.width = 1 # needs to be an int >= 1 no matter what
+        self.width = 1 # hard lower limit
         self.swap_in(settings)
 
     def clear_all(self):
@@ -248,7 +248,7 @@ class DefaultAction(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string):
         table = {"l": "license", "c": "company", "o": "owner", "t": "tab",
-                 "w": "width", "mn": "magic_number"}
+                 "w": "width", "mn": "magic_number", "e": "editor"}
         opt = option_string
         opt = opt.split("--default_")[-1]
         opt = opt.split("-d")[-1]
@@ -276,7 +276,6 @@ class RenameAction(argparse.Action):
         current = getattr(namespace, accumulator)
         for old, new in izip(values[::2], values[1::2]):
             current.append((old, new))
-        print current
         setattr(namespace, accumulator, current)
 
             
