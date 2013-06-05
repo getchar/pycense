@@ -12,7 +12,7 @@ settings_abbrevs = {"tb": "top_begin", "tf": "top_fill", "te": "top_end",
                     "tl": "top_ljust", "lw": "left_wall", "rw": "right_wall",
                     "bb": "bottom_begin", "bf": "bottom_fill", 
                     "be": "bottom_end", "bl": "bottom_ljust", "w": "width",
-                    "t": "tab", "sl": "skip_line"}
+                    "t": "tab", "sl": "skip_line", "bs": "buffer_size"}
 
 class Commentator:
     """Class for generating boxed comments according to a specifications 
@@ -103,6 +103,13 @@ class Commentator:
             # if width has been
             self.width = explicit_width
 
+    def get_buffer(self):
+        """Generate a buffer of blank lines to put before and after the
+        comment."""
+        if not hasattr(self, "buffer_size") or not self.buffer_size:
+            return ""
+        return "\n" * self.buffer_size
+
     def get_horizontal(self, side):
         """Generate a horizontal boundary string according to previously
         recorded settings.  Generates top or bottom depending on 
@@ -164,7 +171,9 @@ class Commentator:
                                                       " " * nspaces,
                                                       self.sr("right_wall"))))
         cond_append(comment_lines, self.get_horizontal("bottom"))
-        return "\n".join(comment_lines)
+        return (self.get_buffer() + 
+                "\n".join(comment_lines) + 
+                self.get_buffer())
 
     def get_storage(self):
         """Generate dictionary to store current settings."""
@@ -182,6 +191,7 @@ class SetAction(argparse.Action):
             namespace.settings[opt] = values
         except AttributeError:
             setattr(namespace, "settings", {opt: values})
+        setattr(namespace, "settings_loaded", True)
 
 class LicenseTypeAction(argparse.Action):
     """Class of action for recording whether to use a named license or a 
@@ -248,7 +258,8 @@ class DefaultAction(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string):
         table = {"l": "license", "c": "company", "o": "owner", "t": "tab",
-                 "w": "width", "mn": "magic_number", "e": "editor"}
+                 "w": "width", "mn": "magic_number", "e": "editor",
+                 "bs": "buffer_size"}
         opt = option_string
         opt = opt.split("--default_")[-1]
         opt = opt.split("-d")[-1]

@@ -15,6 +15,12 @@ def name_to_path(name):
     cwd = os.path.dirname(os.path.abspath(__file__)) + os.sep
     return cwd + "licenses" + os.sep + name + ".txt"
 
+def terminate(code):
+    """Store modified config settings and exit."""
+    with open(config_file, "wb") as fp:
+        config.write(fp)
+    os._exit(code)
+
 config_file = "config.conf"
 
 config = ConfigParser.ConfigParser()
@@ -28,7 +34,8 @@ d_owner = config.get("defaults", "owner")
 d_editor = config.get("defaults", "editor")
 d_settings = {"tab": config.getint("defaults", "tab"),
               "width": config.getint("defaults", "width"),
-              "skip_line": config.getint("defaults", "skip_line")}
+              "skip_line": config.getint("defaults", "skip_line"),
+              "buffer_size": config.getint("defaults", "buffer_size")}
 seeables = ["all", "defaults", "profiles", "sample"]
 
 parser = argparse.ArgumentParser(description = \
@@ -45,6 +52,10 @@ parser.add_argument("--license", "-l", type = str,
                     action = obj.LicenseTypeAction, dest = "license",
                     help = ("license to load; default is %s"
                             % d_license))
+parser.add_argument("--force_apply", "-fa", action = "store_true", 
+                    default = False,
+                    help = ("apply license to files even if no profile "
+                            "or explicit settings are loaded"))
 
 # settings
 parser.add_argument("--tab", "-t", type = int, action = obj.SetAction,
@@ -103,6 +114,10 @@ parser.add_argument("--skip_line", "-sl", type = int, dest = "settings",
                     help = ("number of lines to skip, if possible, "
                             "before inserting the copyright notice; use this "
                             "to hop over shebangs and other magic numbers"))
+parser.add_argument("--buffer_size", "-bs", type = int, dest = "settings",
+                    default = {}, action = obj.SetAction,
+                    help = ("number of blank lines to use as a buffer both "
+                            "above and below the commented license"))
 
 # storing and managing named entities
 parser.add_argument("--store_in_place", "-sip", action = 'store_true', 
@@ -164,6 +179,11 @@ parser.add_argument("--default_skip_line", "-dmn", type = str,
                     default = [],
                     help = ("set default number of lines to skip; added for "
                             "completeness; you probably shouldn't use it"))
+parser.add_argument("--default_buffer_size", "-dbs", type = int,
+                    action = obj.DefaultAction, dest = "defaults",
+                    default = [],
+                    help = ("set default number of blank lines to use as "
+                            "buffers around the commented license"))
 parser.add_argument("--default_editor", "-de", type = str,
                     action = obj.DefaultAction, dest = "defaults",
                     help = ("text editor to use when opening licenses to "
@@ -233,14 +253,14 @@ for license_file in args.edit_license:
     path = name_to_path(license_file)
     if not args.editor:
         print "No editor designated"
-        os._exit(1)
+        terminate(1)
     if os.path.exists(path):
         os.system("%s %s" % (args.editor, path))
     else:
         print "No license named %s found." % (license_file)
-        os._exit(1)
+        terminate(1)
 
-# load license and comment profile if needed
+# load license if needed
 if args.apply_to or "sample" in args.must_see:
     # load license
     if not args.license:
@@ -251,10 +271,10 @@ if args.apply_to or "sample" in args.must_see:
             license_text = open(license_file, "r").read().rstrip("\n")
         except:
             print "No license named '%s' found" % (args.license)
-            os._exit(1)
+            terminate(1)
     else:
         print "No license known or knowable."
-        os._exit(1)
+        terminate(1)
     # swap in replacements in the text
     args.value.append(("owner", args.owner if args.owner else d_owner))
     args.value.append(("company", 
@@ -272,6 +292,7 @@ if args.apply_to or "sample" in args.must_see:
     # replace doubled backslashes, throughing first of every pair away
     license_text = "\\".join(pieces)
 
+# load profile if needed
 must_store = args.store_as or args.store_in_place
 if args.apply_to or "sample" in args.must_see or must_store:
     # create Commentator
@@ -281,7 +302,7 @@ if args.apply_to or "sample" in args.must_see or must_store:
             settings = eval(config.get("profiles", str(args.profile)))
         except ConfigParser.NoOptionError:
             print "No settings profile named %s" % (args.profile)
-            os._exit(1)
+            terminate(1)
     else:
         settings = {}
     for setting in args.settings:
@@ -317,21 +338,26 @@ if "sample" in args.must_see:
     print com.get_boxed(license_text)
 
 # modify the files
-for filename in args.apply_to:
-    fin = open(filename, "r")
-    fout = tempfile.NamedTemporaryFile(prefix = "tmp%s" % filename, dir = ".",
-                                      suffix = "txt", delete = False)
-    for i in range(com.skip_line):
-        line = fin.readline()
-        fout.write(line)
-    fout.write(com.get_boxed(license_text) + "\n")
-    for line in fin.readlines():
-        fout.write(line)
-    fout.flush()
-    os.rename(fout.name, filename)
-    fout.close
+if any([args.profile, args.settings, args.force_apply]):
+    for filename in args.apply_to:
+        fin = open(filename, "r")
+        fout = tempfile.NamedTemporaryFile(prefix = "tmp%s" % filename, 
+                                           dir = ".", suffix = "txt", 
+                                           delete = False)
+        for i in range(com.skip_line):
+            line = fin.readline()
+            fout.write(line)
+        fout.write(com.get_boxed(license_text) + "\n")
+        for line in fin.readlines():
+            fout.write(line)
+        fout.flush()
+        os.rename(fout.name, filename)
+        fout.close
+else:
+    if args.apply_to:
+        print ("To write to a file, you must either specify a comment "
+               "profile, explicitly set some commenting settings, or use "
+               "the flag --force_apply")
+        terminate(1)
 
-# store the config
-with open(config_file, "wb") as fp:
-    config.write(fp)
-
+terminate(0)
