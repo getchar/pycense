@@ -10,21 +10,22 @@ import tempfile
 from pprint import pformat, pprint
 from datetime import datetime
 
+cwd = os.path.dirname(os.path.abspath(__file__)) + os.sep
+
 def name_to_path(name):
     """Creates a path to a license out of its name."""
-    cwd = os.path.dirname(os.path.abspath(__file__)) + os.sep
     return cwd + "licenses" + os.sep + name + ".txt"
 
 def terminate(code):
     """Store modified config settings and exit."""
-    with open(config_file, "wb") as fp:
+    with open(cwd + config_file, "wb") as fp:
         config.write(fp)
     os._exit(code)
 
 config_file = "config.conf"
 
 config = ConfigParser.ConfigParser()
-config.read(config_file)
+config.read(cwd + config_file)
 
 sample_text = "Software license information goes here."
 

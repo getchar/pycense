@@ -140,7 +140,7 @@ class Commentator:
             if d["ljust"]:
                 filler = filler[:len(filler) - diff]
             else:
-                filler = filler[diff:]            
+                filler = filler[diff:]
         return "%s%s%s" % (d["begin"], filler, d["end"])
 
     def get_boxed(self, text):
