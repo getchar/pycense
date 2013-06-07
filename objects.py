@@ -2,6 +2,7 @@
 
 import sys
 import os
+import re
 from textwrap import wrap
 from itertools import izip
 import argparse
@@ -187,6 +188,7 @@ class SetAction(argparse.Action):
         opt = option_string.lstrip("-")
         if opt in settings_abbrevs:
             opt = settings_abbrevs[opt]
+        values = re.sub(r"(\\*)\\(?=-)", "\g<1>", values)
         try:
             namespace.settings[opt] = values
         except AttributeError:
