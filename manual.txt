@@ -3,16 +3,16 @@ by Charlie Pashayan
 
 INTRODUCTION
 
-pycense is a program for slipping copyright notices into source code.  It can be configured to insert any copyright into any number of files using any one of countless possible commenting styles.  pycense will also perform automatic substitution of specified fields with specified values.
+pycense is a program for slipping copyright notices into source code.  It can be configured to insert any copyright into any number of files using any one of countless possible commenting styles.  pycense will also perform automatic substitution of specified fields with specified values within the text of a license.
 
  
 QUICK START
 
 pycense comes preloaded with two simple copyrights, mit_license and bsd_2_clause and five different comment profiles: basic_scripting, c_style, lisp_style, html_style and haskell_style.
 
-So if all you want to do is, for instance, insert an MIT license into a bunch of Python programs, you just run the following command:
+So if all you want to do is, for instance, insert an MIT license into a bunch of Python programs, you just run the following command (filling in your name where appropriate):
 
-pycense --license mit_license --profile basic_scripting --apply_to *.py
+pycense --license mit_license --owner <YOUR NAME> --profile basic_scripting --apply_to *.py
 
 In fact, you don't even need to specify a license from the command line, as long as you have a default license selected.  Out of the box, this will be set to mit_license, which I like to use because it's short enough to read and simple enough to understand.
 
@@ -42,6 +42,52 @@ BUILT IN PROFILES
 <!---------------------------------------------------------------------------->
 <!--html_style looks like this.                                             -->
 <!--                                                                        -->
-<!--                                                                        -->
-
+<!--This is suitable for HTML.                                              -->
 <!---------------------------------------------------------------------------->
+
+-------------------------------------------------------------------------------
+-- haskel_style looks like this.                                             --
+--                                                                           --
+-- It is suitable for Haskell, SQL and AppleScript, that I know of.          --
+-------------------------------------------------------------------------------
+
+CREATING AND MODIFYING COMMENTING PROFILES
+
+Comment profiles are described by 14 variables, which can be set from the command line during each use or drawn from a named profile that had previously been stored.  You can also load a profile and temporarily reset any of its variables during the course of one invocation of pycense.  Let's take a look at the variables and then this will make a lot more sense.  
+
+	--top_begin, -tb
+	The string marking the beginning of the line along the top of the comment box.  Guaranteed to appear.
+
+	--top_end, -te
+	The string marking the end of the line along the top of the comment box.  Guaranteed to appear.
+
+	--top_fill, -tf
+	This string is repeated to fill the gap between top_begin and top_end.  It may not appear at all, depending on the width of the line and the width of the other elements on it.
+
+	--top_ljust, -tl
+	top_fill is used to generate a string that is at least long enough to fill the space between top_begin and top_end.  If top_fill's length doesn't divide that space evenly, the resulting string will have to be trimmed a bit so that it will fit.  top_ljust is a boolean value that tells pycense whether to trim from the front or back (True or False, respectively).
+
+	--left_wall, -lw
+	The left boundary of the area containing the copyright.  If you want a space between the visible part of the wall and the text, build it into the wall.
+
+	--right_wall, -rw
+	The righthand compliment of the left wall.
+
+	--bottom_begin, -bb
+	Like top_begin.
+
+	--bottom_end, -be
+	Like top_end.
+
+	--bottom_fill, -bf
+	Like top_fill.
+
+	--bottom_ljust, -bl
+	Like top_ljust.
+
+	--tab, -t
+	The width of tab stops.  Tabs in the license will be expanded into strings of spaces.
+
+	--width, -w
+	The desired width of a line of source code.  This value may be automatically adjusted if the other s
+
