@@ -257,14 +257,11 @@ class DefaultAction(argparse.Action):
     """Class of action for accumulating default change requests."""
 
     def __call__(self, parser, namespace, values, option_string):
-        table = {"l": "license", "c": "company", "o": "owner", "t": "tab",
-                 "w": "width", "mn": "magic_number", "e": "editor",
-                 "bs": "buffer_size"}
         opt = option_string
         opt = opt.split("--default_")[-1]
         opt = opt.split("-d")[-1]
-        if opt in table:
-            opt = table[opt]
+        if opt in parser.default_key:
+            opt = parser.default_key[opt]
         namespace.defaults.append((opt, values))
 
 class RenameAction(argparse.Action):

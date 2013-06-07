@@ -37,13 +37,17 @@ d_settings = {"tab": config.getint("defaults", "tab"),
               "width": config.getint("defaults", "width"),
               "skip_line": config.getint("defaults", "skip_line"),
               "buffer_size": config.getint("defaults", "buffer_size")}
-seeables = ["all", "defaults", "profiles", "sample"]
+default_key = {"l": "license", "c": "company", "o": "owner", "t": "tab", 
+               "w": "width", "mn": "magic_number", "e": "editor", 
+               "bs": "buffer_size"}
+seeables = ["all", "defaults", "profiles", "licenses", "sample"]
 
 parser = argparse.ArgumentParser(description = \
                                      ("A friendly and modifiable program for "
                                       "slipping copyright notices into your "
                                       "source code."))
 setattr(parser, "d_settings", d_settings)
+setattr(parser, "default_key", default_key)
 setattr(parser, "seeables", seeables)
 
 # loading named entities
@@ -68,7 +72,7 @@ parser.add_argument("--width", "-w", type = int, action = obj.SetAction,
                     help = ("maximum line width in source code"))
 parser.add_argument("--top_begin", "-tb", type = str, action = obj.SetAction,
                     dest = "settings", default = {},
-                    help = ("start of string marking the uppoer boundary of "
+                    help = ("start of string marking the upper boundary of "
                             "commented license"))
 parser.add_argument("--top_fill", "-tf", type = str, action = obj.SetAction,
                     dest = "settings", default = {},
@@ -81,7 +85,7 @@ parser.add_argument("--top_ljust", "-tl", type = str, action = obj.SetAction,
                             "use True or False"))
 parser.add_argument("--top_end", "-te", type = str, action = obj.SetAction,
                     dest = "settings", default = {},
-                    help = ("end of string marking the uppoer boundary of "
+                    help = ("end of string marking the upper boundary of "
                             "commented license"))
 parser.add_argument("--left_wall", "-lw", type = str, action = obj.SetAction,
                     dest = "settings", default = {},
@@ -200,6 +204,10 @@ parser.add_argument("--owner", "-o", type = str,
 parser.add_argument("--value", "-v", type = str, nargs = '+', default = [],
                     action = obj.ValueAdded, metavar = ("OLD", "NEW"),
                     help = ("replace <OLD> with NEW once"))
+parser.add_argument("--no_substitution", "-ns", action = "store_true",
+                    default = False, 
+                    help = ("don't perform any substitutions of "
+                            "<brocketed fields>"))
 
 # produce commented licenses and either write to file or view
 parser.add_argument("--apply_to", "-a", type = str, nargs = "+",
@@ -210,10 +218,10 @@ parser.add_argument("--see", "-s", type = str, action = obj.SeeSomeAction,
                     nargs = "+", metavar = "SEEABLE", dest = "must_see",
                     default = [],
                     help = ("see some information; options include defaults, "
-                            "profiles, and sample, which means that the "
-                            "currently selected license will be printed to the"
-                            "screen using the currently selected comment"
-                            "profile"))
+                            "profiles, licenses and sample, which means that "
+                            "the currently selected license will be printed "
+                            "to the screen using the currently selected "
+                            "comment profile"))
 args = parser.parse_args()
 # remove stuff
 for toremove in args.remove_license:
@@ -276,22 +284,23 @@ if args.apply_to or "sample" in args.must_see:
     else:
         print "No license known or knowable."
         terminate(1)
-    # swap in replacements in the text
-    args.value.append(("owner", args.owner if args.owner else d_owner))
-    args.value.append(("company", 
-                        args.company if args.company else d_company))
-    args.value.append(("year", 
-                       args.year if args.year else datetime.now().year))
-    # an even number of backslashes doesn't affect substitution
-    pieces = license_text.split("\\\\")
-    for old, new in args.value:
-        # make all substitutions unless brocket preceded by a backslash
-        pieces = [re.sub(r"(?<!\\)<%s>" % old, str(new), piece) 
+    if not args.no_substitution:
+        # swap in replacements in the text
+        args.value.append(("owner", args.owner if args.owner else d_owner))
+        args.value.append(("company", 
+                            args.company if args.company else d_company))
+        args.value.append(("year", 
+                           args.year if args.year else datetime.now().year))
+        # an even number of backslashes doesn't affect substitution
+        pieces = license_text.split("\\\\")
+        for old, new in args.value:
+            # make all substitutions unless brocket preceded by a backslash
+            pieces = [re.sub(r"(?<!\\)<%s>" % old, str(new), piece) 
+                      for piece in pieces]
+        pieces = [re.sub(r"\\(?P<brocketed>\<.*?\>)", "\g<brocketed>", piece)
                   for piece in pieces]
-    pieces = [re.sub(r"\\(?P<brocketed>\<.*?\>)", "\g<brocketed>", piece)
-              for piece in pieces]
-    # replace doubled backslashes, throughing first of every pair away
-    license_text = "\\".join(pieces)
+        # replace doubled backslashes, throughing first of every pair away
+        license_text = "\\".join(pieces)
 
 # load profile if needed
 must_store = args.store_as or args.store_in_place
@@ -325,15 +334,19 @@ if args.store_as:
 if "defaults" in args.must_see:
     for var, val in config.items("defaults"):
         print "default %s: %s" % (var, val)
+if "licenses" in args.must_see:
+    for filename in os.listdir("./licenses"):
+        print "license: %s" % (filename)
 if "profiles" in args.must_see:
     for var, val in config.items("profiles"):
-        print "profile %s" % (var)
+        print "profile: %s" % (var)
         # get rid of braces
         dicstr = pformat(eval(val)).replace("{", " ")[:-1]
         for line in dicstr.split("\n"):
             # get rid of single quotes around the data member names
             line = line.replace("'", "")
             line = line.replace("'", "")
+            line = line.lstrip(" ")
             print "\t%s" % (line)
 if "sample" in args.must_see:
     print com.get_boxed(license_text)
