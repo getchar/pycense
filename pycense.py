@@ -27,9 +27,10 @@ import argparse
 import ConfigParser
 import re
 import shutil
+import stat
 import tempfile
-from pprint import pformat, pprint
-from datetime import datetime
+import pprint
+import datetime
 
 cwd = os.path.dirname(os.path.abspath(__file__)) + os.sep
 
@@ -311,7 +312,8 @@ if args.apply_to or "sample" in args.must_see:
         args.value.append(("company", 
                             args.company if args.company else d_company))
         args.value.append(("year", 
-                           args.year if args.year else datetime.now().year))
+                           args.year if args.year else 
+                           datetime.datetime.now().year))
         # an even number of backslashes doesn't affect substitution
         pieces = license_text.split("\\\\")
         for old, new in args.value:
@@ -366,7 +368,7 @@ if "profiles" in args.must_see:
     for var, val in config.items("profiles"):
         print "profile: %s" % (var)
         # get rid of braces
-        dicstr = pformat(eval(val)).replace("{", " ")[:-1]
+        dicstr = pprint.pformat(eval(val)).replace("{", " ")[:-1]
         for line in dicstr.split("\n"):
             # get rid of single quotes around the data member names
             line = line.replace("'", "")
@@ -379,10 +381,12 @@ if "sample" in args.must_see:
 # modify the files
 if any([args.profile, args.settings, args.force_apply]):
     for filename in args.apply_to:
+        mode = stat.S_IMODE(os.stat(filename).st_mode)
         fin = open(filename, "r")
         fout = tempfile.NamedTemporaryFile(prefix = "tmp%s" % filename, 
                                            dir = ".", suffix = "txt", 
                                            delete = False)
+        os.chmod(fout.name, mode)
         for i in range(com.skip_line):
             line = fin.readline()
             fout.write(line)
