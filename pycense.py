@@ -326,7 +326,11 @@ if args.apply_to or "sample" in args.must_see or must_store:
 
 # manage named profiles
 if args.store_in_place:
-    config.set("profiles", args.profile, com.get_storage())
+    if args.profile:
+        config.set("profiles", args.profile, com.get_storage())
+    else:
+        print "Can't store in place because o named profile specified."
+        terminate(1)
 if args.store_as:
     config.set("profiles", args.store_as, com.get_storage())
 
