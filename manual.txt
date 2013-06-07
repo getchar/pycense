@@ -1,0 +1,47 @@
+PYCENSE
+by Charlie Pashayan
+
+INTRODUCTION
+
+pycense is a program for slipping copyright notices into source code.  It can be configured to insert any copyright into any number of files using any one of countless possible commenting styles.  pycense will also perform automatic substitution of specified fields with specified values.
+
+ 
+QUICK START
+
+pycense comes preloaded with two simple copyrights, mit_license and bsd_2_clause and five different comment profiles: basic_scripting, c_style, lisp_style, html_style and haskell_style.
+
+So if all you want to do is, for instance, insert an MIT license into a bunch of Python programs, you just run the following command:
+
+pycense --license mit_license --profile basic_scripting --apply_to *.py
+
+In fact, you don't even need to specify a license from the command line, as long as you have a default license selected.  Out of the box, this will be set to mit_license, which I like to use because it's short enough to read and simple enough to understand.
+
+BUILT IN PROFILES
+
+###############################################################################
+# basic_scripting looks like this.                                            #
+#                                                                             #
+# It's suitable for use with Python, Perl, Ruby, PHP and similar languages as #
+# well Bash and other *nix shells.                                            #
+###############################################################################
+
+//=============================================================================
+// c_style looks like this.
+//
+// It's suitable for use with C/C++, Java and other languages with C-style 
+// syntax.
+//=============================================================================
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; lisp_style looks like this.                                               ;;
+;;                                                                           ;;
+;; It's suitable for use with Lisp and languages based on Lisp such as       ;;
+;; Scheme.                                                                   ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+<!---------------------------------------------------------------------------->
+<!--html_style looks like this.                                             -->
+<!--                                                                        -->
+<!--                                                                        -->
+
+<!---------------------------------------------------------------------------->
