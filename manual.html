@@ -8,4 +8,8 @@ pycense is a program for slipping copyright notices into source code.  It can be
  
 QUICK START
 
-pycense comes preloaded with two simple copyrights, called mit and bsd_2_clause and two
+pycense comes preloaded with two simple copyrights, mit_license and bsd_2_clause and five different comment profiles: basic_scripting, c_style, lisp_style, html_style and haskell_style.
+
+So if all you want to do is, for instance, insert an MIT license into a bunch of Python programs, you just run the following command:
+
+pycense --license mit_license --profile basic_scripting --apply_to *.py
