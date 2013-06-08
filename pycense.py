@@ -57,11 +57,9 @@ d_owner = config.get("defaults", "owner")
 d_editor = config.get("defaults", "editor")
 d_settings = {"tab": config.getint("defaults", "tab"),
               "width": config.getint("defaults", "width"),
-              "skip_line": config.getint("defaults", "skip_line"),
-              "buffer_size": config.getint("defaults", "buffer_size")}
+              "skip_line": config.getint("defaults", "skip_line")}
 default_key = {"l": "license", "c": "company", "o": "owner", "t": "tab", 
-               "w": "width", "mn": "magic_number", "e": "editor", 
-               "bs": "buffer_size"}
+               "w": "width", "mn": "magic_number", "e": "editor"}
 seeables = ["all", "defaults", "profiles", "licenses", "sample"]
 
 parser = argparse.ArgumentParser(description = \
@@ -141,10 +139,6 @@ parser.add_argument("--skip_line", "-sl", type = int, dest = "settings",
                     help = ("number of lines to skip, if possible, "
                             "before inserting the copyright notice; use this "
                             "to hop over shebangs and other magic numbers"))
-parser.add_argument("--buffer_size", "-bs", type = int, dest = "settings",
-                    default = {}, action = obj.SetAction,
-                    help = ("number of blank lines to use as a buffer both "
-                            "above and below the commented license"))
 
 # storing and managing named entities
 parser.add_argument("--store_in_place", "-sip", action = 'store_true', 
@@ -155,7 +149,7 @@ parser.add_argument("--store_as", "-sa", type = str, metavar = "NAME",
                     help = ("name to store currently loaded comment "
                             "profile under"))
 parser.add_argument("--rename_profile", "-rp", type = str, nargs = "+",
-                    metavar = ("OLD", "NEW"), default = [],
+                    metavar = "OLD NEW", default = [],
                     action = obj.RenameAction,
                     help = ("rename a named profile"))
 parser.add_argument("--remove_profile", "-rmp", type = str, nargs = "+",
@@ -166,14 +160,14 @@ parser.add_argument("--import_license", "-il", type = str, nargs = "+",
                     metavar = ("FILE", "LICENSE_NAME"), 
                     help = ("import a file into the license library"))
 parser.add_argument("--rename_license", "-rl", type = str, nargs = "+",
-                    metavar = ("OLD", "NEW"), default = [],
+                    metavar = "OLD NEW", default = [],
                     action = obj.RenameAction,
                     help = ("rename a named license"))
 parser.add_argument("--remove_license", "-rml", type = str, nargs = "+",
                     metavar = "LICENSE", default = [],
                     help = "remove these licenses from the library")
 parser.add_argument("--edit_license", "-el", type = str, nargs = "+",
-                    default = [],
+                    default = [], metavar = "LICENSE",
                     help = ("open up a license by name to edit using the "
                             "editor specified on the command line or in the "
                             "defaults; note that imports and renames are "
@@ -206,11 +200,6 @@ parser.add_argument("--default_skip_line", "-dmn", type = str,
                     default = [],
                     help = ("set default number of lines to skip; added for "
                             "completeness; you probably shouldn't use it"))
-parser.add_argument("--default_buffer_size", "-dbs", type = int,
-                    action = obj.DefaultAction, dest = "defaults",
-                    default = [],
-                    help = ("set default number of blank lines to use as "
-                            "buffers around the commented license"))
 parser.add_argument("--default_editor", "-de", type = str,
                     action = obj.DefaultAction, dest = "defaults",
                     help = ("text editor to use when opening licenses to "
@@ -224,7 +213,7 @@ parser.add_argument("--company", "-c", type = str,
 parser.add_argument("--owner", "-o", type = str,
                     help = ("replace <owner> with this once"))
 parser.add_argument("--value", "-v", type = str, nargs = '+', default = [],
-                    action = obj.ValueAdded, metavar = ("OLD", "NEW"),
+                    action = obj.ValueAdded, metavar = "OLD NEW",
                     help = ("replace <OLD> with NEW once"))
 parser.add_argument("--no_substitution", "-ns", action = "store_true",
                     default = False, 
@@ -239,12 +228,12 @@ parser.add_argument("--apply_to", "-a", type = str, nargs = "+",
 parser.add_argument("--see", "-s", type = str, action = obj.SeeSomeAction,
                     nargs = "+", metavar = "SEEABLE", dest = "must_see",
                     default = [],
-                    help = ("see some information; options include defaults, "
-                            "profiles, licenses and sample, which means that "
-                            "the currently selected license will be printed "
-                            "to the screen using the currently selected "
-                            "comment profile"))
+                    help = ("see some data stored by pycense; options are: "
+                            "defaults, profiles, licenses, sample or all; "
+                            "sample will print a boxed license to your "
+                            "terminal screen"))
 args = parser.parse_args()
+
 # remove stuff
 for toremove in args.remove_license:
     try:
@@ -365,14 +354,13 @@ if "licenses" in args.must_see:
     for filename in os.listdir("./licenses"):
         print "license: %s" % (filename)
 if "profiles" in args.must_see:
-    for var, val in config.items("profiles"):
+    for var, val in sorted(config.items("profiles")):
         print "profile: %s" % (var)
         # get rid of braces
         dicstr = pprint.pformat(eval(val)).replace("{", " ")[:-1]
         for line in dicstr.split("\n"):
             # get rid of single quotes around the data member names
-            line = line.replace("'", "")
-            line = line.replace("'", "")
+            line = line.replace("'", "", 2)
             line = line.lstrip(" ")
             print "\t%s" % (line)
 if "sample" in args.must_see:

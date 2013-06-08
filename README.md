@@ -20,7 +20,7 @@ Here's an example comment box along with the variables used to create it:
 `top_fill`: "ABC"  
 `top_end`: ""  
 `top_ljust`: False  
-`left_wall`: "// " (buffer space is part of the wall)  
+`left_wall`: "// "
 `right_wall`: " %%"  
 `bottom_begin`: ""  
 `bottom_fill`: "DEF"  
