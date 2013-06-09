@@ -22,6 +22,7 @@
 ###############################################################################
 
 import os
+import sys
 import objects as obj
 import argparse
 import ConfigParser
@@ -31,6 +32,10 @@ import stat
 import tempfile
 import pprint
 import datetime
+
+__version__ = "0.1.0"
+__author__ = "Charlie Pashayan"
+__prog__ = "pycense"
 
 cwd = os.path.dirname(os.path.abspath(__file__)) + os.sep
 
@@ -62,7 +67,8 @@ default_key = {"l": "license", "c": "company", "o": "owner", "t": "tab",
                "w": "width", "mn": "magic_number", "e": "editor"}
 seeables = ["all", "defaults", "profiles", "licenses", "sample"]
 
-parser = argparse.ArgumentParser(description = \
+parser = argparse.ArgumentParser(prog = __prog__,
+                                 description = \
                                      ("A friendly and modifiable program for "
                                       "slipping copyright notices into your "
                                       "source code."))
@@ -70,6 +76,9 @@ setattr(parser, "d_settings", d_settings)
 setattr(parser, "default_key", default_key)
 setattr(parser, "seeables", seeables)
 
+parser.add_argument("-v", "--version", action = "version",
+                    version = ("%s version %s by %s" % 
+                               (parser.prog, __version__, __author__)))
 # loading named entities
 parser.add_argument("--profile", "-p", type = str,
                     help = "the comment style profile to load")
@@ -204,6 +213,16 @@ parser.add_argument("--default_editor", "-de", type = str,
                     action = obj.DefaultAction, dest = "defaults",
                     help = ("text editor to use when opening licenses to "
                             "edit."))
+parser.add_argument("--default_suffix", "-ds", type = str, nargs = "+",
+                    action = obj.AddSuffix, dest = "add_suffix",
+                    default = [], metavar = "SUFFIX PROFILE",
+                    help = ("associate a file suffix with a named profile by "
+                            "default"))
+parser.add_argument("--remove_suffix", "-rms", type = str, nargs = "+",
+                    action = obj.RmSuffix, dest = "rm_suffix",
+                    default = [], metavar = "SUFFIX",
+                    help = ("disassociate these suffixes from associated "
+                            "named profiles"))
 
 # set one time substitutions
 parser.add_argument("--year", "-y", type = str,
@@ -212,10 +231,10 @@ parser.add_argument("--company", "-c", type = str,
                     help = ("replace <company> with this once"))
 parser.add_argument("--owner", "-o", type = str,
                     help = ("replace <owner> with this once"))
-parser.add_argument("--value", "-v", type = str, nargs = '+', default = [],
-                    action = obj.ValueAdded, metavar = "OLD NEW",
+parser.add_argument("--substitution_value", "-sv", type = str, nargs = '+', 
+                    default = [], action = obj.ValueAdded, metavar = "OLD NEW",
                     help = ("replace <OLD> with NEW once"))
-parser.add_argument("--no_substitution", "-ns", action = "store_true",
+parser.add_argument("--no_subbstitution", "-ns", action = "store_true",
                     default = False, 
                     help = ("don't perform any substitutions of "
                             "<brocketed fields>"))
@@ -233,6 +252,11 @@ parser.add_argument("--see", "-s", type = str, action = obj.SeeSomeAction,
                             "sample will print a boxed license to your "
                             "terminal screen"))
 args = parser.parse_args()
+
+if len(sys.argv) == 1:
+    parser.print_usage()
+    print "You must supply some option so I know what to do."
+    terminate(1)
 
 # remove stuff
 for toremove in args.remove_license:

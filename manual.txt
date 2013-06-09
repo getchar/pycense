@@ -3,7 +3,7 @@ by Charlie Pashayan
 
 INTRODUCTION
 
-pycense is a program for slipping copyright notices into source code.  It can be configured to insert any copyright into any number of files using any one of countless possible commenting styles.  pycense will also perform automatic substitution of specified fields with specified values within the text of a license.
+pycense is a program for slipping copyright notices into source code.  It can be configured to insert any copyright into any number of files using any one of countless possible commenting styles.  It will also perform automatic substitution of specified fields with specified values within the text of a license.
  
 QUICK START
 
@@ -15,13 +15,36 @@ pycense.py --license mit_license --owner "Rev. L'il Delvin" --profile basic_scri
 
 In fact, you don't even need to specify a license from the command line, as long as you have a default license selected.  Out of the box, this will be set to mit_license, which I like to use because it's short enough to read and simple enough to understand.
 
+The following options do exactly what you'd expect:
+
+	-h, --help
+	-v, --version
+
 OUTLINE
 
-Every time pycense is invoked, at most one license and one profile can be loaded.  That one license and one profile can be applied to any number of files, though.  The currently loaded profile can be a named profile that was created in the past, it can be an anonymous profile made up of settings fed to pycense via command line arguments or it can be a composition of the two, meaning that a named profile can be loaded and then any of the settings within it will be replaced by any settings explicitly set from the command line.  The current profile can be stored if you want: you can either store it in place, overwriting the previous settings for the profile that had been loaded, or it can be stored under a new name.  Profiles can of course be renamed and deleted as well.
+Every time pycense is invoked, at most one license and one profile can be loaded.  That one license, using that one profile, can be written into any number of source files.  The currently loaded profile can be a named profile that was created in the past, it can be an anonymous profile made up of settings fed to pycense via command line arguments or it can be a composition of the two, meaning that a named profile can be loaded and then any of the settings within it will be replaced by any settings explicitly set from the command line.  The current profile can be stored if you want: you can either store it in place, overwriting the previous settings for the profile that had been loaded, or it can be stored under a new name.  Profiles can of course be renamed and deleted as well.
+
+You load the license and profile with the following options:
+
+	--license, -l LICENSE
+	--profile, -p PROFILE
+
+pycense has two basic functions:
+
+	--apply_to FILE [FILE ...]
+	Insert the currently loaded license into all the files listed.  This operation is not reversible, so be careful.
+
+	--see SEEABLE [SEEABLE ...]
+	Request to be shown some setting or data.  The things that may be seen are:
+		defaults: All the default values stored in the configuration file.  More on this later.
+		licenses: A list of all the named licenses.
+		profiles: A list of all the named profiles along with the individual settings for each one.
+		sample: Format the currently loaded license using the currently loaded profile and dump it to the terminal.
+		all: Display all of the above, in the order listed above.
 
 You can also import, rename and edit licenses using pycense.  It's worth pointing out that all deletion, importation, renaming and editing operations are performed--in that order--before the load operations, so that if, for instance, you want to rename and load a license during one invocation of pycense, you have to refer to that license by its new name.  (Because any number of licenses can be modified during one invocation, you still need to explicitly identify the one you want to load.)
 
-You can also manage various defaults, including a default license, a default copyright owner, a default company, certain default settings for commenting profiles (tab, width and skip_line, for which see below) and a default text editor, which pycense will use to open licenses for you when you want to edit them.  As above with the rename and edit operations above, defaults will be set before they are used, so that you only ever work with the most current versions of your data.
+Lastly, you can manage various defaults, including a default license, a default copyright owner, a default company, certain default settings for commenting profiles (tab, width and skip_line, for which see below) and a default text editor, which pycense will use to open licenses for you when you want to edit them.  As above with the rename and edit operations above, defaults will be set before they are used, so that you only ever work with the most current versions of your data.
 
 BUILT IN PROFILES
 
@@ -33,10 +56,10 @@ BUILT IN PROFILES
 ###############################################################################
 
 //=============================================================================
-// c_style looks like this.
-//
-// It's suitable for use with C/C++, Java and other languages with C-style 
-// syntax.
+// c_style looks like this.                                                  //
+//                                                                           //
+// It's suitable for use with C/C++, Java and other languages with C-style   //
+// syntax.                                                                   //
 //=============================================================================
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -49,13 +72,13 @@ BUILT IN PROFILES
 <!---------------------------------------------------------------------------->
 <!--html_style looks like this.                                             -->
 <!--                                                                        -->
-<!--This is suitable for HTML.                                              -->
+<!--This is suitable for HTML and nothing else that I'm aware of.           -->
 <!---------------------------------------------------------------------------->
 
 -------------------------------------------------------------------------------
 -- haskel_style looks like this.                                             --
 --                                                                           --
--- It is suitable for Haskell, SQL and AppleScript, that I know of.          --
+-- It is suitable for Haskell, SQL and AppleScript, as far as I know.        --
 -------------------------------------------------------------------------------
 
 CREATING AND MODIFYING COMMENTING PROFILES
@@ -101,6 +124,24 @@ Comment profiles are described by 13 variables, which can be set from the comman
 	--skip_lines, -sl
 	The number of lines to skip before inserting the comment box.  Use this to jump over any magic numbers that are required to appear at the very beginning of the source, such as the shebang at the top of Perl and Python scripts.
 
+Once an anonymous profile has been created or a named profile has been loaded (and possibly modified), you have a few options:
+
+	--store_in_place, -sip
+	Use this if you have modified a named profile and want to overwrite the previous version of it.
+
+	--store_as, -sa NAME
+	Use this if you have an anaonymous profile you want to save or a modified named profile you want to save under a new name.
+
+And you can further modify profiles with the following options:
+
+	--rename_profile, -rp OLD NEW [OLD NEW ...]
+	Rename the profile called OLD as NEW.
+
+	--remove_profile, -rmp
+	Remove a profile from the configuration file.
+	
+	
+
 A WORD ABOUT WIDTH: ON BEING THE RIGHT SIZE
 
 Because comment boxes are designed to accomodate text, the text portion of the comment box must be at least one character wide.  Furthermore, the maximum line width must be long enough to include all of the guaranteed printable portions of the comment box (that is: top_begin and top_end, bottom_begin and bottom_end, and left_wall, right_wall and one character of text).
@@ -109,7 +150,7 @@ If the width explicitly requested by the user is smaller than the minimum width 
 
 If there are any words that can't fit within the width of a line, they will be broken off so that they fill as much space as possible.  No hyphens will be inserted.  So you'd be better off leaving ample space for longer words.
 
-CREATING A COMMENT PROFILE
+A SAMPLE COMMENT FILE
 
 To clarify the meaning of the settings, I'm going to walk you through a novel comment profile and the command you'll run to create it.
 
@@ -166,22 +207,45 @@ Once you've got your license copied down into a text file, you need to import th
 
 pycense.py --import_license FreeAndOpenSourceSoftwareLicense.txt fossl
 
-Now that the license is imported, if you want to make any changes, you can open it up and edit it with the command:
+Now that the license is imported, if you want to make any changes to it, you can do so using the following options:
 
-pycense.py --edit fossl	
+	--rename_license, -rl OLD NEW
+	Rename the license with the name OLD as NEW.
+	
+	--remove_license, -rml
+	Remove the named license from the pycense's library.
+
+	--edit_license, -el
+	Open up the named license using whatever editor has been designated using the --editor option or the default editor.
+
+	--editor, -e
+	The editor to use this one time when editing the license.
+
 
 There are a few things to consider when editing your licenses.  First of all, paragraphs should not be indented and paragraph breaks should be indicated by a blank line.  Because text editors have a habit of slipping an extra newline in at the end of files, pycense will remove exactly one newline from the very end of the license if it finds one.  So if you want your license to end with a blank line, remember to pad it with an extra, sacrificial newline to appease pycense's hunger.
 
-Finally, pycense is able to make substitutions within the currently loaded license, allowing you to automatically fill in certain fields.  So the licenses as they are stored are really more like templates.  Substitution fields within the license are strings enclosed by brockets, meaning <they look like this>.  pycense will always try to perform three substitutions: year, owner and company.  All three of these have default values: year is drawn from the system clock, and default values for owner and company will be drawn from the configuration file.  If no default values have been set, blank strings will be used.  You can override the default values for all three of these using specific commandline options: 
+Additionally, pycense is able to make substitutions within the currently loaded license, allowing you to automatically fill in certain fields.  (So the licenses as they are stored are really more like templates.)  Substitution fields within the license are strings enclosed by brokets, meaning that <they look like this>.  pycense will almost always try to perform three substitutions: year, owner and company.  All three of these have default values: year is drawn from the system clock, and default values for owner and company will be drawn from the configuration file.  If no default values have been set, blank strings will be used.  You can override the default values for all three of these using specific commandline options: 
 
 	--year, -y
 	--owner, -o
 	--company, -c
 
-Note that these are all handled as strings, so for instance owner could be a list of owners and pycense would be none the wiser.
+Note that these are all handled as strings, so, for instance, owner could be a comma separated list of owners and pycense would be none the wiser.  Hint.
+These are the only substitutions common enough to warrant such special treatment, but you can perform almost any other substitution you can imagine on a case by case basis by invoking pycense with the following flag:
 
+	--substitute_value, -sv OLD NEW
+	Searches through the text for the broketed string <OLD> and replaces it with NEW.
 
+These irregular substitutions must be requested on the command line every time they are needed, as allowing general substitutions into the defaults file would open the user to pernicious and confusing bugs.  If you really want to make the same substitution every time, consider hardcoding the change into the license file itself.
 
+Any broketed strings that don't have a known substitution will be left untouched.  And if, for whatever reason, you want a literal broketed string containing one of the OLD values to appear in the output of pycense, you'll have to escape it with a backslash in front of the opening broket.  Standard escape rules apply, by the way, so that you can escape the backslash with another backslash, and in general, an odd number of backslashes will prevent the special interpretation of the brokets and the number of backslashes printed will be h
+alf that which appears in the unaltered text.  Finally, you can disable substitutions altogether by adding the following flag:
+
+	--no_substitution, -ns
+
+There is one restriction on the substitution strings and that is fairly common sense but if you can't guess it off-hand you should probably be made aware of it: the OLD string cannot contain a closing broket, ">".  Due to the way pycense performs the string replacement (regular expressions), the first closing broket encountered is interpereted unambiguously as the end of the broketed string.
+
+So when you're installing and editing licenses, make sure that you are aware of these rules.  Licenses as they appear in the wild might not be ready to have these substitutions made cleanly.  For instance, instead of leaving a space for <owner> they might leave a space for <copyright holder>.  They might use braces, brackets or parentheses.  It wouldn't be practical to teach pycense all the different editing conventions that could possibly be used and some of them might even conflict with one another.  But fortunately it will be easy for you, as a human, to understand how all the fields are represented.
 
 
 DEFAULTS

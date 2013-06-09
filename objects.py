@@ -305,3 +305,20 @@ class RenameAction(argparse.Action):
         setattr(namespace, accumulator, current)
 
             
+class AddSuffix(argparse.Action):
+    """Class of action to associate suffixes with named commenting profiles."""
+
+    def __call__(self, parser, namespace, values, option_string):
+        if len(values) % 2 == 1:
+            message = ("You must provide equal numbers of suffixes and "
+                       "profiles")
+            raise argparse.ArgumentError(None, message)
+        for suffix, profile in izip(values[::2], values[1::2]):
+            namespace.add_suffix.append((suffix, profile))
+
+class RmSuffix(argparse.Action):
+    """Class of action to disassociate suffixes from any previously associated
+    named commenting profiles."""
+
+    def __call__(self, parser, namespace, values, option_string):
+        namespace.rm_suffix.extend(values)
