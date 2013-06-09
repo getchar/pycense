@@ -65,7 +65,7 @@ d_settings = {"tab": config.getint("defaults", "tab"),
               "skip_line": config.getint("defaults", "skip_line")}
 default_key = {"l": "license", "c": "company", "o": "owner", "t": "tab", 
                "w": "width", "mn": "magic_number", "e": "editor"}
-seeables = ["all", "defaults", "profiles", "licenses", "sample"]
+seeables = ["all", "defaults", "profiles", "licenses", "sample", "suffixes"]
 
 parser = argparse.ArgumentParser(prog = __prog__,
                                  description = \
@@ -231,7 +231,7 @@ parser.add_argument("--company", "-c", type = str,
                     help = ("replace <company> with this once"))
 parser.add_argument("--owner", "-o", type = str,
                     help = ("replace <owner> with this once"))
-parser.add_argument("--substitution_value", "-sv", type = str, nargs = '+', 
+parser.add_argument("--substitute_value", "-sv", type = str, nargs = '+', 
                     default = [], action = obj.ValueAdded, metavar = "OLD NEW",
                     help = ("replace <OLD> with NEW once"))
 parser.add_argument("--no_subbstitution", "-ns", action = "store_true",
@@ -255,7 +255,7 @@ args = parser.parse_args()
 
 if len(sys.argv) == 1:
     parser.print_usage()
-    print "You must supply some option so I know what to do."
+    print "You leave me with no option."
     terminate(1)
 
 # remove stuff
@@ -272,6 +272,8 @@ for toremove in args.remove_profile:
     except AssertionError:
         # fail silently unless --silent, --verbose  support added
         pass
+for suffix in args.rm_suffix:
+    config.remove_option("suffixes", suffix)
 
 # import and rename stuff
 for filepath, newname in args.imports:
@@ -291,6 +293,8 @@ for old, new in args.rename_license:
 # adjust defaults
 for name, value in args.defaults:
     config.set("defaults", name, value)
+for suffix, profile in args.add_suffix:
+    config.set("suffixes", suffix, profile)
 
 # edit licenses
 for license_file in args.edit_license:
@@ -373,7 +377,10 @@ if args.store_as:
 # see what must be seen
 if "defaults" in args.must_see:
     for var, val in config.items("defaults"):
-        print "default %s: %s" % (var, val)
+            print "default %s: %s" % (var, pprint.pformat(val))
+if "suffixes" in args.must_see:
+    for var, val in sorted(config.items("suffixes")):
+        print "suffix %s: %s" % (var, val)
 if "licenses" in args.must_see:
     for filename in os.listdir("./licenses"):
         print "license: %s" % (filename)

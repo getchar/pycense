@@ -29,18 +29,25 @@ You load the license and profile with the following options:
 	--license, -l LICENSE
 	--profile, -p PROFILE
 
-pycense has two basic functions:
+You can access pycense's basic functionality with the following options:
 
 	--apply_to FILE [FILE ...]
 	Insert the currently loaded license into all the files listed.  This operation is not reversible, so be careful.
 
+	--force_apply
+	With this flag set, pycense will apply the selected license to all the selected files even if not profile has been loaded and no settings have been set.
+
 	--see SEEABLE [SEEABLE ...]
-	Request to be shown some setting or data.  The things that may be seen are:
-		defaults: All the default values stored in the configuration file.  More on this later.
-		licenses: A list of all the named licenses.
-		profiles: A list of all the named profiles along with the individual settings for each one.
-		sample: Format the currently loaded license using the currently loaded profile and dump it to the terminal.
-		all: Display all of the above, in the order listed above.
+	Request to be shown some setting or data.
+
+Here is everything that can be seen with the --see option:
+
+	defaults: All the default values stored in the configuration file.  More on this later.
+	licenses: A list of all the named licenses.
+	profiles: A list of all the named profiles along with the individual settings for each one.
+	sample: Format the currently loaded license using the currently loaded profile and dump it to the terminal.
+	all: Display all of the above, in the order listed above.
+
 
 You can also import, rename and edit licenses using pycense.  It's worth pointing out that all deletion, importation, renaming and editing operations are performed--in that order--before the load operations, so that if, for instance, you want to rename and load a license during one invocation of pycense, you have to refer to that license by its new name.  (Because any number of licenses can be modified during one invocation, you still need to explicitly identify the one you want to load.)
 
@@ -121,7 +128,7 @@ Comment profiles are described by 13 variables, which can be set from the comman
 	--width, -w
 	The maximum width of lines making up the comment box.  The value for width that is actually used will be subject to certain common sense restrictions, so it might be automatically adjusted.  But pycense will always make the smallest adjustment possible and revert to the requested width if possible.
 
-	--skip_lines, -sl
+	--skip_line, -sl
 	The number of lines to skip before inserting the comment box.  Use this to jump over any magic numbers that are required to appear at the very beginning of the source, such as the shebang at the top of Perl and Python scripts.
 
 Once an anonymous profile has been created or a named profile has been loaded (and possibly modified), you have a few options:
@@ -203,9 +210,10 @@ LICENSES
 
 You can either write a license yourself if you're some kind of genius or find one online.  http://opensource.org/licenses is a good resource, with lots of open source licenses indexed by name and category.
 
-Once you've got your license copied down into a text file, you need to import that license into pycense's central repository.  Easy enough.  Let's say the license is in a file called FreeAndOpenSourceSoftwareLicense.txt and you want to name it fossl (for brevity is the soul of reduced risk for repetetive stress injuries):
+Once you've got your license copied down into a text file, you need to import that license into pycense's central repository.  Easy enough. Use this option:
 
-pycense.py --import_license FreeAndOpenSourceSoftwareLicense.txt fossl
+	--import_license FILE_NAME LICENSE_NAME
+	Import the file indicated by FILE_NAME and save it under the name LICENSE_NAME.
 
 Now that the license is imported, if you want to make any changes to it, you can do so using the following options:
 
