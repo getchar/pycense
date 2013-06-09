@@ -166,7 +166,8 @@ class Commentator:
         def cond_append(l, s):
             if s:
                 l.append(s)
-        text = text.rstrip("\n")
+        if text[-1] == "\n":
+            text = text[:-1]
         comment_lines = []
         cond_append(comment_lines, self.get_horizontal("top"))
         tabwidth = self.sr("tab", 8)
@@ -258,15 +259,17 @@ class ImportAction(argparse.Action):
             raise argparse.ArgumentError(None, message)
         if not hasattr(namespace, "imports"):
             setattr(namespace, "imports", [])
-        no_are = []
         for path, name in izip(values[::2], values[1::2]):
             if not os.path.exists(path):
-                nohay.append(path)
+                message = "file '%s' does not exist" % (path)
+                raise argparse.ArgumentError(None, message)
+            if os.sep in name:
+                message = ("license cannot be named '%s', as "
+                           "license names cannot contain '%s'" %
+                           (name, os.sep))
+                raise argparse.ArgumentError(None, message)
             namespace.imports.append((path, name))
-        if no_are:
-            no_are = ", ".join(nohay)
-            message = "%s not found" % (no_are)
-            raise argparse.ArgumentError(None, message)
+
 
 class DefaultAction(argparse.Action):
     """Class of action for accumulating default change requests."""

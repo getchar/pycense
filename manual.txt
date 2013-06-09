@@ -101,6 +101,14 @@ Comment profiles are described by 13 variables, which can be set from the comman
 	--skip_lines, -sl
 	The number of lines to skip before inserting the comment box.  Use this to jump over any magic numbers that are required to appear at the very beginning of the source, such as the shebang at the top of Perl and Python scripts.
 
+A WORD ABOUT WIDTH: ON BEING THE RIGHT SIZE
+
+Because comment boxes are designed to accomodate text, the text portion of the comment box must be at least one character wide.  Furthermore, the maximum line width must be long enough to include all of the guaranteed printable portions of the comment box (that is: top_begin and top_end, bottom_begin and bottom_end, and left_wall, right_wall and one character of text).
+
+If the width explicitly requested by the user is smaller than the minimum width required by the rest of the settings, the printed width will be automatically reset to the required minimum width.  If any other settings are changed to make the explicitly requested width possible, the printed width will be reset to the requested value.
+
+If there are any words that can't fit within the width of a line, they will be broken off so that they fill as much space as possible.  No hyphens will be inserted.  So you'd be better off leaving ample space for longer words.
+
 CREATING A COMMENT PROFILE
 
 To clarify the meaning of the settings, I'm going to walk you through a novel comment profile and the command you'll run to create it.
@@ -140,10 +148,64 @@ This will cause your default license to be loaded, boxed up and dumped to the te
 
 SPECIAL CHARACTERS
 
-Notice that the string values in the command above were all enclosed in single quotes.  It is necessary to enclose these values in quotes as they might contain spaces and it is advisable to use single quotes as doing so prevents the shell from interpereting any special characters, such as $, ! or #.  There is one character so special that even single quotes won't protect it, however and that's a dash at the beginning of the string.  (The reason single quotes can't protect these, by the way, is that they get their special meaning not from the shell but from Python's argument parsing engine, which makes certain assumptions about arguments beginning with dashes that don't hold true in this case.)
+Notice that the string values in the command above were all enclosed in single quotes.  It is necessary to enclose these values in quotes as they might contain spaces.  And it is advisable to use single quotes as doing so prevents the shell from interpereting any special characters, such as $, ! or #.
 
-So if you want any component of your comment box to begin with a nonzero number of dashes, you need to protect it with a backslash.  And if you want any component to begin with any number of backslashes followed by any number of dashes, you also need to protect it with a single dash.  In both cases, pycense will remove exactly one backslash and leave the rest of the string intact.  Backslashes and dashes anywhere else in a string will be ignored completely--even backslashes appearing at the beginning of the string, assuming they aren't followed immediately by a series of dashes.  
+There is one character so special that even single quotes won't protect it, however and that's a dash at the beginning of the string.  (The reason single quotes can't protect these, by the way, is that they get their special meaning not from the shell but from Python's argument parsing engine, which makes certain assumptions about arguments beginning with dashes that don't hold true in this case.)
+
+So if you want any component of your comment box to begin with a nonzero number of dashes, you need to protect it with a backslash.  And if you want any component to begin with any number of backslashes followed by any number of dashes, you also need to protect it with a single dash.  In both cases, pycense will remove exactly one backslash and leave the rest of the string intact.
+
+Backslashes and dashes anywhere else in a string will be ignored completely--even backslashes appearing at the beginning of the string, assuming they aren't followed immediately by a series of dashes.  
 
 To put it in terms of regular expressions, it takes one backslash to protect a string beginning with zero or more backslashes followed by one or more dashes: 's/\\(^\\*-+.*)/\1/'.
 
+LICENSES
+
+You can either write a license yourself if you're some kind of genius or find one online.  http://opensource.org/licenses is a good resource, with lots of open source licenses indexed by name and category.
+
+Once you've got your license copied down into a text file, you need to import that license into pycense's central repository.  Easy enough.  Let's say the license is in a file called FreeAndOpenSourceSoftwareLicense.txt and you want to name it fossl (for brevity is the soul of reduced risk for repetetive stress injuries):
+
+pycense.py --import_license FreeAndOpenSourceSoftwareLicense.txt fossl
+
+Now that the license is imported, if you want to make any changes, you can open it up and edit it with the command:
+
+pycense.py --edit fossl	
+
+There are a few things to consider when editing your licenses.  First of all, paragraphs should not be indented and paragraph breaks should be indicated by a blank line.  Because text editors have a habit of slipping an extra newline in at the end of files, pycense will remove exactly one newline from the very end of the license if it finds one.  So if you want your license to end with a blank line, remember to pad it with an extra, sacrificial newline to appease pycense's hunger.
+
+Finally, pycense is able to make substitutions within the currently loaded license, allowing you to automatically fill in certain fields.  So the licenses as they are stored are really more like templates.  Substitution fields within the license are strings enclosed by brockets, meaning <they look like this>.  pycense will always try to perform three substitutions: year, owner and company.  All three of these have default values: year is drawn from the system clock, and default values for owner and company will be drawn from the configuration file.  If no default values have been set, blank strings will be used.  You can override the default values for all three of these using specific commandline options: 
+
+	--year, -y
+	--owner, -o
+	--company, -c
+
+Note that these are all handled as strings, so for instance owner could be a list of owners and pycense would be none the wiser.
+
+
+
+
+
+DEFAULTS
+
+You can manage the various defaults using the following commandline options:
+
+	--default_license, -dl
+	The license that will be loaded unless a license is explicitly requested.
+
+	--default_company, -dc
+	This will be substituted for the string <company> anywhere it appears in the text of the license unless a different company is specified on the command line.
+
+	--default_owner, -do
+	This will be sustituted for the string <owner> anywhere it appears in the text of the license unless a different owner is specified on the command line.
+
+	--default_tab, -dt
+	This is the default value that will be used for the tab setting in the event that one is not explicitly specified either in the command line or in the stored settings of a named profile.
+
+	--default_width, -dw
+	This is the default value for line width that will be used if one is not explicitly specified.
+
+	--default_skip_line, -dsl
+	This is the default value for skip line that will be used if one is not explicitly specified.
+
+	--default_editor, -de
+	This is the editor that pycense will use to open up imported licenses when you want to edit them.  As always, the correct answer is emacs.
 

@@ -157,7 +157,7 @@ parser.add_argument("--remove_profile", "-rmp", type = str, nargs = "+",
                     help = "remove these profiles from the library")
 parser.add_argument("--import_license", "-il", type = str, nargs = "+",
                     action = obj.ImportAction, dest = "imports", default = [],
-                    metavar = ("FILE", "LICENSE_NAME"), 
+                    metavar = "FILE_NAME LICENSE_NAME", 
                     help = ("import a file into the license library"))
 parser.add_argument("--rename_license", "-rl", type = str, nargs = "+",
                     metavar = "OLD NEW", default = [],
@@ -195,7 +195,7 @@ parser.add_argument("--default_tab", "-dt", type = int, dest = "defaults",
 parser.add_argument("--default_width", "-dw", type = int, dest = "defaults",
                     action = obj.DefaultAction, default = [],
                     help = ("default line width to use in all source code"))
-parser.add_argument("--default_skip_line", "-dmn", type = str, 
+parser.add_argument("--default_skip_line", "-dsl", type = str, 
                     action = obj.DefaultAction, nargs = "+", dest = "defaults",
                     default = [],
                     help = ("set default number of lines to skip; added for "
