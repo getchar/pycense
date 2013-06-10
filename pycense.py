@@ -234,7 +234,7 @@ parser.add_argument("--owner", "-o", type = str,
 parser.add_argument("--substitute_value", "-sv", type = str, nargs = '+', 
                     default = [], action = obj.ValueAdded, metavar = "OLD NEW",
                     help = ("replace <OLD> with NEW once"))
-parser.add_argument("--no_subbstitution", "-ns", action = "store_true",
+parser.add_argument("--no_substitution", "-ns", action = "store_true",
                     default = False, 
                     help = ("don't perform any substitutions of "
                             "<brocketed fields>"))
@@ -325,15 +325,16 @@ if args.apply_to or "sample" in args.must_see:
         terminate(1)
     if not args.no_substitution:
         # swap in replacements in the text
-        args.value.append(("owner", args.owner if args.owner else d_owner))
-        args.value.append(("company", 
+        args.substitute_value.append(("owner", args.owner if args.owner 
+                                        else d_owner))
+        args.substitute_value.append(("company", 
                             args.company if args.company else d_company))
-        args.value.append(("year", 
+        args.substitute_value.append(("year", 
                            args.year if args.year else 
                            datetime.datetime.now().year))
         # an even number of backslashes doesn't affect substitution
         pieces = license_text.split("\\\\")
-        for old, new in args.value:
+        for old, new in args.substitute_value:
             # make all substitutions unless brocket preceded by a backslash
             pieces = [re.sub(r"(?<!\\)<%s>" % old, str(new), piece) 
                       for piece in pieces]
@@ -345,6 +346,25 @@ if args.apply_to or "sample" in args.must_see:
 # load profile if needed
 must_store = args.store_as or args.store_in_place
 if args.apply_to or "sample" in args.must_see or must_store:
+    if not args.profile and not args.settings and not args.force_apply:
+        # try for default profile: all suffixes must map to the same profile
+        d_profile = None
+        for filename in args.apply_to:
+            suffix = os.path.splitext(filename)[1][1:]
+            try:
+                c_profile = config.get("suffixes", suffix)
+                if not d_profile:
+                    d_profile = c_profile
+                elif d_profile != c_profile:
+                    print ("Cannot intuit profile based on suffixes: "
+                           "conflcting default for %s" % (suffix))
+                    terminate(1)
+            except ConfigParser.NoOptionError:
+                print ("Cannot intuit profile based on suffixes: no default "
+                       "set for suffix '%s'" % (suffix))
+                terminate(1)
+        args.profile = d_profile
+                    
     # create Commentator
     if args.profile:
         # load settings from named profile
@@ -399,11 +419,13 @@ if "sample" in args.must_see:
 
 # modify the files
 if any([args.profile, args.settings, args.force_apply]):
-    for filename in args.apply_to:
-        mode = stat.S_IMODE(os.stat(filename).st_mode)
-        fin = open(filename, "r")
+    for fullpath in args.apply_to:
+        dirname = os.path.dirname(os.path.abspath(fullpath)) + os.sep
+        filename = os.path.basename(fullpath)
+        mode = stat.S_IMODE(os.stat(fullpath).st_mode)
+        fin = open(fullpath, "r")
         fout = tempfile.NamedTemporaryFile(prefix = "tmp%s" % filename, 
-                                           dir = ".", suffix = "txt", 
+                                           dir = dirname, suffix = "txt", 
                                            delete = False)
         os.chmod(fout.name, mode)
         for i in range(com.skip_line):
@@ -413,7 +435,7 @@ if any([args.profile, args.settings, args.force_apply]):
         for line in fin.readlines():
             fout.write(line)
         fout.flush()
-        os.rename(fout.name, filename)
+        os.rename(fout.name, dirname + filename)
         fout.close
 else:
     if args.apply_to:

@@ -207,7 +207,6 @@ class SetAction(argparse.Action):
             namespace.settings[opt] = values
         except AttributeError:
             setattr(namespace, "settings", {opt: values})
-        setattr(namespace, "settings_loaded", True)
 
 class LicenseTypeAction(argparse.Action):
     """Class of action for recording whether to use a named license or a 
