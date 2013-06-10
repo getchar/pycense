@@ -435,7 +435,7 @@ if any([args.profile, args.settings, args.force_apply]):
         for line in fin.readlines():
             fout.write(line)
         fout.flush()
-        os.rename(fout.name, dirname + filename)
+        os.rename(fout.name, dirname + fullpath)
         fout.close
 else:
     if args.apply_to:
