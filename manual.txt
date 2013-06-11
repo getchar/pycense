@@ -7,9 +7,7 @@ pycense is a program for slipping copyright notices into source code.  It can be
  
 QUICK START
 
-pycense comes preloaded with two simple copyrights, mit_license and bsd_2_clause and five different comment profiles: basic_scripting, c_style, lisp_style, html_style and haskell_style.
-
-So let's say that you want to release some Python code under an MIT license.  Let's further assume that your name is Rev. L'il Delvin.  All you have to do is navegate to the directory containing the source files and run the following command (assuming pycense is somewhere in your search path):
+pycense comes preloaded with two copyright notices, mit_license and bsd_2_clause, and five different comment profiles: basic_scripting, c_style, lisp_style, html_style and haskell_style.  So let's say that you want to release some Python code under an MIT license.  Let's further assume that your name is Rev. L'il Delvin.  All you have to do is navegate to the directory containing the source files and run the following command (assuming pycense is somewhere in your search path):
 
 pycense.py --license mit_license --owner "Rev. L'il Delvin" --profile basic_scripting --apply_to *.py
 
@@ -22,7 +20,7 @@ The following options do exactly what you'd expect:
 
 OUTLINE
 
-Every time pycense is invoked, at most one license and one profile can be loaded.  That one license, using that one profile, can be written into any number of source files.  The currently loaded profile can be a named profile that was created in the past, it can be an anonymous profile made up of settings fed to pycense via command line arguments or it can be a composition of the two, meaning that a named profile can be loaded and then any of the settings within it will be replaced by any settings explicitly set from the command line.  The current profile can be stored if you want: you can either store it in place, overwriting the previous settings for the profile that had been loaded, or it can be stored under a new name.  Profiles can of course be renamed and deleted as well.
+Every time pycense is invoked, at most one license and one profile can be loaded.  That one license, using that one profile, can be written into any number of source files.  The currently loaded profile can be a named profile that was created in the past, it can be an anonymous profile made up of settings fed to pycense via command line arguments or it can be a composition of the two, meaning that a named profile can be loaded and then any of the settings within it can be replaced by any settings explicitly set from the command line.  The current profile can also be stored if you want: if it's based on a preexisting profile, you can store it in place, overwriting the previous settings for the selected profile, or you can save your profile under a new name.  Profiles can of course be renamed and deleted as well.
 
 You load the license and profile with the following options:
 
@@ -49,9 +47,9 @@ Here is everything that can be seen with the --see option:
 	all: Display all of the above, in the order listed above.
 
 
-You can also import, rename and edit licenses using pycense.  It's worth pointing out that all deletion, importation, renaming and editing operations are performed--in that order--before the load operations, so that if, for instance, you want to rename and load a license during one invocation of pycense, you have to refer to that license by its new name.  (Because any number of licenses can be modified during one invocation, you still need to explicitly identify the one you want to load.)
+You can also import, rename and edit licenses using pycense.  It's worth pointing out that all deletion, importation, renaming and editing operations are performed--in that order--before the load operations, so that if, for instance, you want to rename and load a license during one invocation of pycense, you have to refer to that license by its new name in the load request.  (Because any number of licenses can be modified during one invocation, you still need to explicitly identify the one you want to load.)
 
-Lastly, you can manage various defaults, including a default license, a default copyright owner, a default company, certain default settings for commenting profiles (tab, width and skip_line, for which see below) and a default text editor, which pycense will use to open licenses for you when you want to edit them.  As above with the rename and edit operations above, defaults will be set before they are used, so that you only ever work with the most current versions of your data.
+Lastly, you can manage various defaults, including a default license, a default copyright owner, a default company, certain default settings for commenting profiles (tab, width and skip_line) and a default text editor, which pycense will use to open licenses for you when you want to edit them.  As above with the rename and edit operations above, defaults will be set before they are used, so that you only ever work with the most current versions of your data.
 
 BUILT IN PROFILES
 
@@ -90,45 +88,45 @@ BUILT IN PROFILES
 
 CREATING AND MODIFYING COMMENTING PROFILES
 
-Comment profiles are described by 13 variables, which can be set from the command line during each use or drawn from a named profile that had previously been stored.  You can also load a profile and temporarily reset any of its variables during the course of one invocation of pycense.  Let's take a look at the variables and then this will make a lot more sense.  
+Comment profiles are defined using 13 variables, which can be set from the command line during each use or drawn from a named profile that had previously been stored.  You can also load a profile and temporarily reset any of its variables during the course of one invocation of pycense.  Here are the variables and the options you can use to set them:
 
-	--top_begin, -tb
+	--top_begin, -tb TOP_BEGIN
 	The string marking the beginning of the line along the top of the comment box.  Guaranteed to appear.
 
-	--top_end, -te
+	--top_end, -te TOP_END
 	The string marking the end of the line along the top of the comment box.  Guaranteed to appear.
 
-	--top_fill, -tf
-	This string is repeated to fill the gap between top_begin and top_end.  It will be repeated zero or more times to fill up any space left between top_begin and top_end.
+	--top_fill, -tf TOP_FILL
+	This string is repeated as necessary to fill the gap between top_begin and top_end.  It will only be printed if space remains, but it is guaranteed to fill all the space, if there is any.
 
-	--top_ljust, -tl
-	top_fill is used to generate a string that is at least long enough to fill the space between top_begin and top_end.  If top_fill's length doesn't divide that space evenly, the resulting string will have to be trimmed a bit so that it will fit.  top_ljust is a boolean value that tells pycense whether to trim from the front or back (True or False, respectively).
+	--top_rjust, -tl TOP_RJUST
+	If top_fill's length doesn't evenly divide the space between top_begin and top_end, the string that it produces will have to be trimmed.  top_rjust is a boolean value that tells pycense whether to trim from the front or the back (True or False, respectively).  False by default.
 
-	--left_wall, -lw
+	--left_wall, -lw LEFT_WALL
 	The left boundary of the area containing the copyright.  If you want a space between the visible part of the wall and the text, build it into the wall.
 
-	--right_wall, -rw
+	--right_wall, -rw RIGHT_WALL
 	The righthand compliment of the left wall.
 
-	--bottom_begin, -bb
+	--bottom_begin, -bb BOTTOM_BEGIN
 	Like top_begin.
 
-	--bottom_end, -be
+	--bottom_end, -be BOTTOM_END
 	Like top_end.
 
-	--bottom_fill, -bf
+	--bottom_fill, -bf BOTTOM_FILL
 	Like top_fill.
 
-	--bottom_ljust, -bl
-	Like top_ljust.
+	--bottom_rjust, -bl BOTTOM_RJUST
+	Like top_rjust.
 
-	--tab, -t
-	The width of tab stops.  Tabs in the license will be expanded into strings of spaces.  Paragraphs must be divided by newlines, though, so tabs should be avoided anyway.
+	--tab, -t TAB
+	Tabs in the license will be expanded into strings of spaces.  This value represents the distance between tab stops.  Paragraphs must be divided by newlines, though, so tabs should be avoided anyway.
 
-	--width, -w
-	The maximum width of lines making up the comment box.  The value for width that is actually used will be subject to certain common sense restrictions, so it might be automatically adjusted.  But pycense will always make the smallest adjustment possible and revert to the requested width if possible.
+	--width, -w WIDTH
+	The maximum width of lines making up the comment box.  The value for width that is actually used will be subject to certain common sense restrictions, so it might be automatically adjusted.  But pycense will always make the smallest adjustment possible and revert to the requested width if possible.  Only one value for width will be used in a given invocation.
 
-	--skip_line, -sl
+	--skip_line, -sl SKIP_LINE
 	The number of lines to skip before inserting the comment box.  Use this to jump over any magic numbers that are required to appear at the very beginning of the source, such as the shebang at the top of Perl and Python scripts.
 
 Once an anonymous profile has been created or a named profile has been loaded (and possibly modified), you have a few options:
@@ -144,16 +142,14 @@ And you can further modify profiles with the following options:
 	--rename_profile, -rp OLD NEW [OLD NEW ...]
 	Rename the profile called OLD as NEW.
 
-	--remove_profile, -rmp
+	--remove_profile, -rmp PROFILE [PROFILE ...]
 	Remove a profile from the configuration file.
-	
-	
 
 A WORD ABOUT WIDTH: ON BEING THE RIGHT SIZE
 
-Because comment boxes are designed to accomodate text, the text portion of the comment box must be at least one character wide.  Furthermore, the maximum line width must be long enough to include all of the guaranteed printable portions of the comment box (that is: top_begin and top_end, bottom_begin and bottom_end, and left_wall, right_wall and one character of text).
+Because comment boxes are designed to accomodate text, the text portion of the comment box must be at least one character wide.  Furthermore, the maximum line width must be long enough to include all of the guaranteed printable portions of the comment box (that is: top_begin plus top_end, bottom_begin plus bottom_end, and left_wall plus right_wall plus one character of text).
 
-If the width explicitly requested by the user is smaller than the minimum width required by the rest of the settings, the printed width will be automatically reset to the required minimum width.  If any other settings are changed to make the explicitly requested width possible, the printed width will be reset to the requested value.
+If the width explicitly requested by the user is smaller than the minimum width required by the rest of the settings, the printed width will be automatically reset to the required minimum width.  If any other settings are changed to make the explicitly requested width possible, the printed width will be reset to the requested value.  But pycense will never change width once it's begun printing, so every line written to file during one session will be the same width.
 
 If there are any words that can't fit within the width of a line, they will be broken off so that they fill as much space as possible.  No hyphens will be inserted.  So you'd be better off leaving ample space for longer words.
 
@@ -169,26 +165,26 @@ To clarify the meaning of the settings, I'm going to walk you through a novel co
 # look like.   :)
 #RE$MILLIONAIRE$#
 
-You'll want to give your profiles names that evocative and easy to remember.  Let's call this one morning_rain.
+You'll want to give your profiles names that are evocative and easy to remember.  Let's call this one morning_rain.
 
 The settings are as follows:
 
 top_begin: "#"
 top_fill: "CA$HMONEY"
 top_end: "#"
-top_ljust: True
+top_rjust: False
 left_wall: "# "
 right_wall: " :)"
 bottom_begin: "#"
 bottom_fill: "MILLIONAIRE$"
-bottom_ljust: False
+bottom_rjust: True
 width: 17
 
-Based on the sample above, it's not clear what skip_lines will be set to, but it's probably 1 based on the fact that the commenting mechanism is a pound sign, which is common in scripting languages that require a shebang in the first line to let the shell know what interpreter to feed the program to.  Here's the command you'd run to create this script:
+Based on the sample above, it's not clear what skip_lines will be set to, but it's probably 1 based on the fact that the commenting mechanism is a pound sign, which suggests this profile will be used for commenting in a scripting languages, and scripting languages often require a shebang in the first line to let the shell know what interpreter to feed the program to.  Here's the command you'd run to create this profile:
 
 pycense.py -tb '#' -tf 'CA$HMONEY' -te '#' -tl True -lw '# ' -rw ' :)' -bb '#' -bf 'MILLIONAIRE$' -be '#' -bl False -w 17 --store_as morning_rain
 
-This may seem like a lot to type, but think of all the time it will save you in the long run.  To save even more time, I've included this profile in the installation of pycense.  So try running the following command to see what it will look like:
+This may seem like a lot to type, but think of all the time it will save you in the long run.  To save even more time, I've included this profile in the basic installation of pycense.  So try running the following command to see what it looks like:
 
 pycense.py -p morning_rain --see sample
 
@@ -196,15 +192,15 @@ This will cause your default license to be loaded, boxed up and dumped to the te
 
 SPECIAL CHARACTERS
 
-Notice that the string values in the command above were all enclosed in single quotes.  It is necessary to enclose these values in quotes as they might contain spaces.  And it is advisable to use single quotes as doing so prevents the shell from interpereting any special characters, such as $, ! or #.
+Notice that the string values in the command above were all enclosed in single quotes.  It is necessary to enclose these values in quotes to protect any spaces they might contain.  And it is advisable to use single quotes as doing so prevents the shell from interpereting any special characters, such as '$', '!', ';' or '#'.
 
-There is one character so special that even single quotes won't protect it, however and that's a dash at the beginning of the string.  (The reason single quotes can't protect these, by the way, is that they get their special meaning not from the shell but from Python's argument parsing engine, which makes certain assumptions about arguments beginning with dashes that don't hold true in this case.)
+There is one character so special that even single quotes won't protect it, however, and that's a dash at the beginning of the string.  (The reason single quotes can't protect these, by the way, is that they get their special meaning not from the shell but from Python's argument parsing engine, which makes certain assumptions about arguments beginning with dashes that don't hold true in this case.)
 
-So if you want any component of your comment box to begin with a nonzero number of dashes, you need to protect it with a backslash.  And if you want any component to begin with any number of backslashes followed by any number of dashes, you also need to protect it with a single dash.  In both cases, pycense will remove exactly one backslash and leave the rest of the string intact.
+So if you want any component of your comment box to begin with a nonzero number of dashes, you need to protect it with a backslash.  And if you want any component to begin with any number of backslashes followed by any number of dashes, you also need to protect it with a single backslash.  In both cases, pycense will remove exactly one backslash and leave the rest of the string intact.
 
 Backslashes and dashes anywhere else in a string will be ignored completely--even backslashes appearing at the beginning of the string, assuming they aren't followed immediately by a series of dashes.  
 
-To put it in terms of regular expressions, it takes one backslash to protect a string beginning with zero or more backslashes followed by one or more dashes: 's/\\(^\\*-+.*)/\1/'.
+To put it in terms of regular expressions,  one backslash will be removed from any string beginning with zero or more backslashes followed by one or more dashes: 's/\\(^\\*-+.*)/\1/'.
 
 LICENSES
 
@@ -212,21 +208,21 @@ You can either write a license yourself if you're some kind of genius or find on
 
 Once you've got your license copied down into a text file, you need to import that license into pycense's central repository.  Easy enough. Use this option:
 
-	--import_license FILE_NAME LICENSE_NAME
+	--import_license FILE_NAME LICENSE_NAME [FILE_NAME LICENSE_NAME ...]
 	Import the file indicated by FILE_NAME and save it under the name LICENSE_NAME.
 
 Now that the license is imported, if you want to make any changes to it, you can do so using the following options:
 
-	--rename_license, -rl OLD NEW
+	--rename_license, -rl OLD NEW [OLD NEW ...]
 	Rename the license with the name OLD as NEW.
 	
-	--remove_license, -rml
+	--remove_license, -rml LICENSE [LICENSE ...]
 	Remove the named license from the pycense's library.
 
-	--edit_license, -el
+	--edit_license, -el LICENSE [LICENSE ...]
 	Open up the named license using whatever editor has been designated using the --editor option or the default editor.
 
-	--editor, -e
+	--editor, -e EDITOR
 	The editor to use this one time when editing the license.
 
 

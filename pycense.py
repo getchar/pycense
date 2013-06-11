@@ -60,9 +60,9 @@ d_license = config.get("defaults", "license")
 d_company = config.get("defaults", "company")
 d_owner = config.get("defaults", "owner")
 d_editor = config.get("defaults", "editor")
-d_settings = {"tab": config.getint("defaults", "tab"),
-              "width": config.getint("defaults", "width"),
-              "skip_line": config.getint("defaults", "skip_line")}
+d_settings = {("tab", config.getint("defaults", "tab")),
+              ("width", config.getint("defaults", "width")),
+              ("skip_line", config.getint("defaults", "skip_line"))}
 default_key = {"l": "license", "c": "company", "o": "owner", "t": "tab", 
                "w": "width", "mn": "magic_number", "e": "editor"}
 seeables = ["all", "defaults", "profiles", "licenses", "sample", "suffixes"]
@@ -93,58 +93,58 @@ parser.add_argument("--force_apply", "-fa", action = "store_true",
 
 # settings
 parser.add_argument("--tab", "-t", type = int, action = obj.SetAction,
-                    dest = "settings", default = {},
+                    dest = "settings", default = [],
                     help = ("tab width of document (there shoulldn't be any "
                             "tabs in your license"))
 parser.add_argument("--width", "-w", type = int, action = obj.SetAction,
-                    default = d_settings["width"], dest = "settings", 
+                    dest = "settings", default = [],
                     help = ("maximum line width in source code"))
 parser.add_argument("--top_begin", "-tb", type = str, action = obj.SetAction,
-                    dest = "settings", default = {},
+                    dest = "settings", default = [],
                     help = ("start of string marking the upper boundary of "
                             "commented license"))
 parser.add_argument("--top_fill", "-tf", type = str, action = obj.SetAction,
-                    dest = "settings", default = {},
+                    dest = "settings", default = [],
                     help = ("string to repeat along the upper boundary of "
                             "commented license"))
-parser.add_argument("--top_ljust", "-tl", type = str, action = obj.SetAction,
-                    dest = "settings", default = {},
-                    help = ("whether to left justify the fill along the "
+parser.add_argument("--top_rjust", "-tr", type = str, action = obj.SetAction,
+                    dest = "settings", default = [],
+                    help = ("whether to right justify the fill along the "
                             "upper boundary of the commented license; "
-                            "use True or False"))
+                            "use True or False (False by default)"))
 parser.add_argument("--top_end", "-te", type = str, action = obj.SetAction,
-                    dest = "settings", default = {},
+                    dest = "settings", default = [],
                     help = ("end of string marking the upper boundary of "
                             "commented license"))
 parser.add_argument("--left_wall", "-lw", type = str, action = obj.SetAction,
-                    dest = "settings", default = {},
+                    dest = "settings", default = [],
                     help = ("left wall of commented license; surrounds "
                             "text of licesne; include any spaces desired as "
                             "buffer"))
 parser.add_argument("--right_wall", "-rw", type = str, action = obj.SetAction,
-                    dest = "settings", default = {},
+                    dest = "settings", default = [],
                     help = ("right wall of commented license; surrounds "
                             "text of licesne; include any spaces desired as "
                             "buffer"))
 parser.add_argument("--bottom_begin", "-bb", type = str, dest = "settings", 
-                    default = {}, action = obj.SetAction,
+                    default = [], action = obj.SetAction,
                     help = ("start of string marking the lower boundary of "
                             "commented license"))
 parser.add_argument("--bottom_fill", "-bf", type = str, action = obj.SetAction,
-                    dest = "settings", default = {},
+                    dest = "settings", default = [],
                     help = ("string to repeat along the lower boundary of "
                             "commented license"))
-parser.add_argument("--bottom_ljust", "-bl", type = str, dest = "settings",
-                    default = {}, action = obj.SetAction,
-                    help = ("whether to left justify the fill along the "
+parser.add_argument("--bottom_rjust", "-br", type = str, dest = "settings",
+                    default = [], action = obj.SetAction,
+                    help = ("whether to right justify the fill along the "
                             "lower boundary of the commented license; "
-                            "use True or False"))
+                            "use True or False (False by default)"))
 parser.add_argument("--bottom_end", "-be", type = str, action = obj.SetAction,
-                    dest = "settings", default = {},
+                    dest = "settings", default = [],
                     help = ("end of string marking the lower boundary of "
                             "commented license"))
 parser.add_argument("--skip_line", "-sl", type = int, dest = "settings", 
-                    default = {}, action = obj.SetAction,
+                    default = [], action = obj.SetAction,
                     help = ("number of lines to skip, if possible, "
                             "before inserting the copyright notice; use this "
                             "to hop over shebangs and other magic numbers"))
@@ -251,7 +251,22 @@ parser.add_argument("--see", "-s", type = str, action = obj.SeeSomeAction,
                             "defaults, profiles, licenses, sample or all; "
                             "sample will print a boxed license to your "
                             "terminal screen"))
+
 args = parser.parse_args()
+
+# fil = lambda x: re.sub(r"(\\*)\\(?=-)", "\g<1>", values)
+# def recursive_filter(data):
+#     if type(data) is sring:
+#         data = re.sub(r"(\\*)\\(?=-)", "\g<1>", data)
+#     elif type(data) in [tuple, list]:
+#         for datum in data:
+#             recursive_filter(data)
+#     else:
+#         pass
+
+# pprint.pprint(vars(args))
+# os._exit(44)
+
 
 if len(sys.argv) == 1:
     parser.print_usage()
@@ -374,14 +389,14 @@ if args.apply_to or "sample" in args.must_see or must_store:
             print "No settings profile named %s" % (args.profile)
             terminate(1)
     else:
-        settings = {}
-    for setting in args.settings:
+        settings = []
+    for setting, value in args.settings:
         # swap in any settings explicitly set in the cmdline
-        settings[setting] = args.settings[setting]
-    for setting in d_settings:
+        settings.append((setting, value))
+    for setting, value in d_settings:
         # only swap in default settings if not set elsewhere
-        if setting not in settings:
-            settings[setting] = d_settings[setting]
+        if setting not in [t[0] for t in settings]:
+            settings.append((setting, value))
     com = obj.Commentator(settings)
 
 # manage named profiles
@@ -389,7 +404,7 @@ if args.store_in_place:
     if args.profile:
         config.set("profiles", args.profile, com.get_storage())
     else:
-        print "Can't store in place because o named profile specified."
+        print "Can't store in place because no named profile specified."
         terminate(1)
 if args.store_as:
     config.set("profiles", args.store_as, com.get_storage())

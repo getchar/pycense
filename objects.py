@@ -31,9 +31,9 @@ import argparse
 from pprint import pprint
 
 settings_abbrevs = {"tb": "top_begin", "tf": "top_fill", "te": "top_end",
-                    "tl": "top_ljust", "lw": "left_wall", "rw": "right_wall",
+                    "tr": "top_rjust", "lw": "left_wall", "rw": "right_wall",
                     "bb": "bottom_begin", "bf": "bottom_fill", 
-                    "be": "bottom_end", "bl": "bottom_ljust", "w": "width",
+                    "be": "bottom_end", "br": "bottom_rjust", "w": "width",
                     "t": "tab", "sl": "skip_line"}
 
 class Commentator:
@@ -43,8 +43,8 @@ class Commentator:
     top_begin, top_fill, top_end: describe the top of the boxed section;
       top_fill is repeated as many times as possible to fill the space
       between top_begin and top_end.  
-    top_ljust: If the space cannot be filled evenly, by repetitions of 
-      top_fill, top_ljust decides whether to cut off the beginning or the 
+    top_rjust: If the space cannot be filled evenly, by repetitions of 
+      top_fill, top_rjust decides whether to cut off the beginning or the 
       end of the string it creates.
     left_wall, right_wall: vertical boundaries around comment region.
     bottom_begin, bottom_fill, bottom_end, bottom_fill: behave like
@@ -55,7 +55,7 @@ class Commentator:
     magic_number: if present, comment must be inserted after this.  If
       absent, comment should be first thing in the file."""
 
-    def __init__(self, settings = {}):
+    def __init__(self, settings = []):
         """Initialize a commentator according to settings string."""
         self.width = 1 # hard lower limit
         self.swap_in(settings)
@@ -76,8 +76,8 @@ class Commentator:
         delim: character that separates settings from values as well as 
           setting/value pairs in the settings string.  delim must not appear
           in either the name of a setting or the value presented."""
-        for name in settings:
-            self.set_value(name, settings[name])
+        for name, value in settings:
+            self.set_value(name, value)
 
     def set_value(self, name, value):
         """Set a single value; easier to read for humans; used for tests."""
@@ -135,7 +135,7 @@ class Commentator:
             # raise error
             pass
         d = {}
-        names = ["begin", "fill", "end", "ljust"]
+        names = ["begin", "fill", "end", "rjust"]
         for name in names:
             d[name] = self.sr(side + "_" + name, "")
         if not d["fill"]:
@@ -152,10 +152,10 @@ class Commentator:
         filler = d["fill"] * fill_times
         if len(filler) > fill_space:
             diff = len(filler) - fill_space
-            if d["ljust"]:
-                filler = filler[:len(filler) - diff]
-            else:
+            if d["rjust"]:
                 filler = filler[diff:]
+            else:
+                filler = filler[:len(filler) - diff]
         return "%s%s%s" % (d["begin"], filler, d["end"])
 
     def get_boxed(self, text):
@@ -190,8 +190,8 @@ class Commentator:
         return "\n".join(comment_lines)
                 
     def get_storage(self):
-        """Generate dictionary to store current settings."""
-        return vars(self)
+        """Generate tuple list to store current settings."""
+        return str([(var, getattr(self, var)) for var in vars(self)])
 
 class SetAction(argparse.Action):
     """Class to handle applying settings from the command line, simplifying
@@ -203,10 +203,7 @@ class SetAction(argparse.Action):
             opt = settings_abbrevs[opt]
         if type(values) is str:
             values = re.sub(r"(\\*)\\(?=-)", "\g<1>", values)
-        try:
-            namespace.settings[opt] = values
-        except AttributeError:
-            setattr(namespace, "settings", {opt: values})
+        namespace.settings.append((opt, values))
 
 class LicenseTypeAction(argparse.Action):
     """Class of action for recording whether to use a named license or a 
