@@ -196,11 +196,11 @@ Notice that the string values in the command above were all enclosed in single q
 
 There is one character so special that even single quotes won't protect it, however, and that's a dash at the beginning of the string.  (The reason single quotes can't protect these, by the way, is that they get their special meaning not from the shell but from Python's argument parsing engine, which makes certain assumptions about arguments beginning with dashes that don't hold true in this case.)
 
-So if you want any component of your comment box to begin with a nonzero number of dashes, you need to protect it with a backslash.  And if you want any component to begin with any number of backslashes followed by any number of dashes, you also need to protect it with a single backslash.  In both cases, pycense will remove exactly one backslash and leave the rest of the string intact.
+So if you want any component of your comment box to begin with a nonzero number of dashes, you need to protect it with a percent sign (%).  And if you want any component to begin with any number of percent signs followed by any number of dashes, you also need to protect it with a single percent sign.  In both cases, pycense will remove exactly one percent sign and leave the rest of the string intact.
 
-Backslashes and dashes anywhere else in a string will be ignored completely--even backslashes appearing at the beginning of the string, assuming they aren't followed immediately by a series of dashes.  
+Percent signs and dashes anywhere else in a string will be ignored completely--even percent signs appearing at the beginning of the string, assuming they aren't followed immediately by a series of dashes.  
 
-To put it in terms of regular expressions,  one backslash will be removed from any string beginning with zero or more backslashes followed by one or more dashes: 's/\\(^\\*-+.*)/\1/'.
+To put it in terms of regular expressions,  one percent sign will be removed from any string beginning with zero or more percent signes followed by one or more dashes: 's/\\(^\\*-+.*)/\1/'.
 
 LICENSES
 

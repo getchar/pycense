@@ -201,8 +201,6 @@ class SetAction(argparse.Action):
         opt = option_string.lstrip("-")
         if opt in settings_abbrevs:
             opt = settings_abbrevs[opt]
-        if type(values) is str:
-            values = re.sub(r"(\\*)\\(?=-)", "\g<1>", values)
         namespace.settings.append((opt, values))
 
 class LicenseTypeAction(argparse.Action):

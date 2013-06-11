@@ -253,20 +253,24 @@ parser.add_argument("--see", "-s", type = str, action = obj.SeeSomeAction,
                             "terminal screen"))
 
 args = parser.parse_args()
-
-# fil = lambda x: re.sub(r"(\\*)\\(?=-)", "\g<1>", values)
-# def recursive_filter(data):
-#     if type(data) is sring:
-#         data = re.sub(r"(\\*)\\(?=-)", "\g<1>", data)
-#     elif type(data) in [tuple, list]:
-#         for datum in data:
-#             recursive_filter(data)
-#     else:
-#         pass
-
-# pprint.pprint(vars(args))
-# os._exit(44)
-
+def unescape(obj):
+    """Filters out escape sequences protecting non-option arguments that
+    begin with dashes or percent signs followed by dashes."""
+    def r_unescape(data):
+        """Recurses through collections looking for atoms.  Removes escape
+        percent sign from strings, leaves all others unchanged."""
+        if type(data) is str:
+            return re.sub("(%*)%(?=-)", "\g<1>", data)
+        elif type(data) in (tuple, list):
+            # tuples temporarily converted to lists of same arity; don't care
+            return [r_unescape(datum) for datum in data]
+        else:
+            return data
+    for field in vars(obj):
+        setattr(obj, field,
+                r_unescape(getattr(obj, field)))
+unescape(args)
+pprint.pprint(vars(args))
 
 if len(sys.argv) == 1:
     parser.print_usage()
