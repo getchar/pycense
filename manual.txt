@@ -18,6 +18,7 @@ The following options do exactly what you'd expect:
 	-h, --help
 	-v, --version
 
+
 OUTLINE
 
 Every time pycense is invoked, at most one license and one profile can be loaded.  That one license, using that one profile, can be written into any number of source files.  The currently loaded profile can be a named profile that was created in the past, it can be an anonymous profile made up of settings fed to pycense via command line arguments or it can be a composition of the two, meaning that a named profile can be loaded and then any of the settings within it can be replaced by any settings explicitly set from the command line.  The current profile can also be stored if you want: if it's based on a preexisting profile, you can store it in place, overwriting the previous settings for the selected profile, or you can save your profile under a new name.  Profiles can of course be renamed and deleted as well.
@@ -51,8 +52,23 @@ You can also import, rename and edit licenses using pycense.  It's worth pointin
 
 Lastly, you can manage various defaults, including a default license, a default copyright owner, a default company, certain default settings for commenting profiles (tab, width and skip_line), default file extension associations and a default text editor, which pycense will use to open licenses for you when you want to edit them.  As above with the rename and edit operations above, defaults will be set before they are used, so that you only ever work with the most current versions of your data.
 
+
 AN EASTER EGG: AUTOMATIC PROFILE SELECTION
 
+It's possible to associate file name extensions with default profiles, so that pycense will intuit which commenting profile to apply to a given group of files.  There are some strict requirements on when pycense will try to do this, but these requirements are easily met under the vast majority of use cases:
+
+	1) All the files must have file extensions
+	2) All those file extensions map onto the same profile
+	3) No settings can be explicitly set on the command line
+	4) --force_apply has not been set
+
+So if pycense is configured properly (and it is, right out of the box),
+
+	pycense.py --apply_to *.pl *.py
+
+is equivalent to
+
+	pycense.py --profile basic_scripting --license MIT_license --apply_to *.pl *.py
 
 
 BUILT IN PROFILES
@@ -89,6 +105,7 @@ BUILT IN PROFILES
 --                                                                           --
 -- It is suitable for Haskell, SQL and AppleScript, as far as I know.        --
 -------------------------------------------------------------------------------
+
 
 CREATING AND MODIFYING COMMENTING PROFILES
 
@@ -149,6 +166,7 @@ And you can further modify profiles with the following options:
 	--remove_profile, -rmp PROFILE [PROFILE ...]
 	Remove a profile from the configuration file.
 
+
 A WORD ABOUT WIDTH: ON BEING THE RIGHT SIZE
 
 Because comment boxes are designed to accomodate text, the text portion of the comment box must be at least one character wide.  Furthermore, the maximum line width must be long enough to include all of the guaranteed printable portions of the comment box (that is: top_begin plus top_end, bottom_begin plus bottom_end, and left_wall plus right_wall plus one character of text).
@@ -194,6 +212,7 @@ This may seem like a lot to type, but think of all the time it will save you in 
 
 This will cause your default license to be loaded, boxed up and dumped to the terminal screen for review.
 
+
 SPECIAL CHARACTERS
 
 Notice that the string values in the command above were all enclosed in single quotes.  It is necessary to enclose these values in quotes to protect any spaces they might contain.  And it is advisable to use single quotes as doing so prevents the shell from interpereting any special characters, such as '$', '!', ';' or '#'.
@@ -205,6 +224,7 @@ So if you want any component of your comment box to begin with a nonzero number 
 Percent signs and dashes anywhere else in a string will be ignored completely--even percent signs appearing at the beginning of the string, assuming they aren't followed immediately by a series of dashes.  
 
 To put it in terms of regular expressions,  one percent sign will be removed from any string beginning with zero or more percent signes followed by one or more dashes: 's/\\(^\\*-+.*)/\1/'.
+
 
 LICENSES
 
@@ -253,7 +273,7 @@ alf that which appears in the unaltered text.  Finally, you can disable substitu
 
 There is one restriction on the substitution strings and that is fairly common sense but if you can't guess it off-hand you should probably be made aware of it: the OLD string cannot contain a closing broket, ">".  Due to the way pycense performs the string replacement (regular expressions), the first closing broket encountered is interpereted unambiguously as the end of the broketed string.
 
-So when you're installing and editing licenses, make sure that you are aware of these rules.  Licenses as they appear in the wild might not be ready to have these substitutions made cleanly.  For instance, instead of leaving a space for <owner> they might leave a space for <copyright holder>.  They might use braces, brackets or parentheses.  It wouldn't be practical to teach pycense all the different editing conventions that could possibly be used and some of them might even conflict with one another.  But fortunately it will be easy for you, as a human, to understand how all the fields are represented.
+So when you're installing and editing licenses, make sure that you are aware of these rules.  Licenses as they appear in the wild might not be ready to have these substitutions made cleanly.  For instance, instead of leaving a space for <owner> they might leave a space for <copyright holder>.  They might use braces, brackets or parentheses.  It wouldn't be practical to teach pycense all the different editing conventions that could possibly be used and some of them might even conflict with one another.  But fortunately it will be for you, as a human, to understand how all the fields are represented.
 
 
 DEFAULTS
