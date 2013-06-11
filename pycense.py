@@ -270,7 +270,6 @@ def unescape(obj):
         setattr(obj, field,
                 r_unescape(getattr(obj, field)))
 unescape(args)
-pprint.pprint(vars(args))
 
 if len(sys.argv) == 1:
     parser.print_usage()
@@ -454,7 +453,7 @@ if any([args.profile, args.settings, args.force_apply]):
         for line in fin.readlines():
             fout.write(line)
         fout.flush()
-        os.rename(fout.name, dirname + fullpath)
+        os.rename(fout.name, fullpath)
         fout.close
 else:
     if args.apply_to:

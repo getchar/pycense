@@ -9,7 +9,7 @@ QUICK START
 
 pycense comes preloaded with two copyright notices, mit_license and bsd_2_clause, and five different comment profiles: basic_scripting, c_style, lisp_style, html_style and haskell_style.  So let's say that you want to release some Python code under an MIT license.  Let's further assume that your name is Rev. L'il Delvin.  All you have to do is navegate to the directory containing the source files and run the following command (assuming pycense is somewhere in your search path):
 
-pycense.py --license mit_license --owner "Rev. L'il Delvin" --profile basic_scripting --apply_to *.py
+	pycense.py --license mit_license --owner "Rev. L'il Delvin" --profile basic_scripting --apply_to *.py
 
 In fact, you don't even need to specify a license from the command line, as long as you have a default license selected.  Out of the box, this will be set to mit_license, which I like to use because it's short enough to read and simple enough to understand.
 
@@ -36,7 +36,7 @@ You can access pycense's basic functionality with the following options:
 	With this flag set, pycense will apply the selected license to all the selected files even if not profile has been loaded and no settings have been set.
 
 	--see SEEABLE [SEEABLE ...]
-	Request to be shown some setting or data.
+		Request to be shown some setting or data.
 
 Here is everything that can be seen with the --see option:
 
@@ -49,7 +49,11 @@ Here is everything that can be seen with the --see option:
 
 You can also import, rename and edit licenses using pycense.  It's worth pointing out that all deletion, importation, renaming and editing operations are performed--in that order--before the load operations, so that if, for instance, you want to rename and load a license during one invocation of pycense, you have to refer to that license by its new name in the load request.  (Because any number of licenses can be modified during one invocation, you still need to explicitly identify the one you want to load.)
 
-Lastly, you can manage various defaults, including a default license, a default copyright owner, a default company, certain default settings for commenting profiles (tab, width and skip_line) and a default text editor, which pycense will use to open licenses for you when you want to edit them.  As above with the rename and edit operations above, defaults will be set before they are used, so that you only ever work with the most current versions of your data.
+Lastly, you can manage various defaults, including a default license, a default copyright owner, a default company, certain default settings for commenting profiles (tab, width and skip_line), default file extension associations and a default text editor, which pycense will use to open licenses for you when you want to edit them.  As above with the rename and edit operations above, defaults will be set before they are used, so that you only ever work with the most current versions of your data.
+
+AN EASTER EGG: AUTOMATIC PROFILE SELECTION
+
+
 
 BUILT IN PROFILES
 
@@ -182,11 +186,11 @@ width: 17
 
 Based on the sample above, it's not clear what skip_lines will be set to, but it's probably 1 based on the fact that the commenting mechanism is a pound sign, which suggests this profile will be used for commenting in a scripting languages, and scripting languages often require a shebang in the first line to let the shell know what interpreter to feed the program to.  Here's the command you'd run to create this profile:
 
-pycense.py -tb '#' -tf 'CA$HMONEY' -te '#' -tl True -lw '# ' -rw ' :)' -bb '#' -bf 'MILLIONAIRE$' -be '#' -bl False -w 17 --store_as morning_rain
+	pycense.py -tb '#' -tf 'CA$HMONEY' -te '#' -tl True -lw '# ' -rw ' :)' -bb '#' -bf 'MILLIONAIRE$' -be '#' -bl False -w 17 --store_as morning_rain
 
 This may seem like a lot to type, but think of all the time it will save you in the long run.  To save even more time, I've included this profile in the basic installation of pycense.  So try running the following command to see what it looks like:
 
-pycense.py -p morning_rain --see sample
+	pycense.py -p morning_rain --see sample
 
 This will cause your default license to be loaded, boxed up and dumped to the terminal screen for review.
 
@@ -230,9 +234,9 @@ There are a few things to consider when editing your licenses.  First of all, pa
 
 Additionally, pycense is able to make substitutions within the currently loaded license, allowing you to automatically fill in certain fields.  (So the licenses as they are stored are really more like templates.)  Substitution fields within the license are strings enclosed by brokets, meaning that <they look like this>.  pycense will almost always try to perform three substitutions: year, owner and company.  All three of these have default values: year is drawn from the system clock, and default values for owner and company will be drawn from the configuration file.  If no default values have been set, blank strings will be used.  You can override the default values for all three of these using specific commandline options: 
 
-	--year, -y
-	--owner, -o
-	--company, -c
+	--year, -y YEAR
+	--owner, -o OWNER
+	--company, -c COMPANY
 
 Note that these are all handled as strings, so, for instance, owner could be a comma separated list of owners and pycense would be none the wiser.  Hint.
 These are the only substitutions common enough to warrant such special treatment, but you can perform almost any other substitution you can imagine on a case by case basis by invoking pycense with the following flag:
@@ -256,24 +260,26 @@ DEFAULTS
 
 You can manage the various defaults using the following commandline options:
 
-	--default_license, -dl
+	--default_license, -dl DEFAULT_LICENSe
 	The license that will be loaded unless a license is explicitly requested.
 
-	--default_company, -dc
+	--default_company, -dc DEFAULT_COMPANY
 	This will be substituted for the string <company> anywhere it appears in the text of the license unless a different company is specified on the command line.
 
-	--default_owner, -do
+	--default_owner, -do DEFAULT_OWNER
 	This will be sustituted for the string <owner> anywhere it appears in the text of the license unless a different owner is specified on the command line.
 
-	--default_tab, -dt
+	--default_tab, -dt DEFAULT_TAB
 	This is the default value that will be used for the tab setting in the event that one is not explicitly specified either in the command line or in the stored settings of a named profile.
 
-	--default_width, -dw
+	--default_width, -dw DEFAULT_WIDTH
 	This is the default value for line width that will be used if one is not explicitly specified.
 
-	--default_skip_line, -dsl
+	--default_skip_line, -dsl DEFAULT_SKIP_LINE
 	This is the default value for skip line that will be used if one is not explicitly specified.
 
-	--default_editor, -de
+	--default_editor, -de EDITOR
 	This is the editor that pycense will use to open up imported licenses when you want to edit them.  As always, the correct answer is emacs.
+
+	--default_suffix, -ds SUFFIX PROFILE [SUFFIX PROFILE ...]
 
