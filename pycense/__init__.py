@@ -33,7 +33,7 @@ import tempfile
 import pprint
 import datetime
 
-__version__ = "0.1.0"
+__version__ = "1.0"
 __author__ = "Charlie Pashayan"
 __prog__ = "pycense"
 
@@ -252,214 +252,215 @@ parser.add_argument("--see", "-s", type = str, action = obj.SeeSomeAction,
                             "sample will print a boxed license to your "
                             "terminal screen"))
 
-args = parser.parse_args()
-def unescape(obj):
-    """Filters out escape sequences protecting non-option arguments that
-    begin with dashes or percent signs followed by dashes."""
-    def r_unescape(data):
-        """Recurses through collections looking for atoms.  Removes escape
-        percent sign from strings, leaves all others unchanged."""
-        if type(data) is str:
-            return re.sub("(%*)%(?=-)", "\g<1>", data)
-        elif type(data) in (tuple, list):
-            # tuples temporarily converted to lists of same arity; don't care
-            return [r_unescape(datum) for datum in data]
-        else:
-            return data
-    for field in vars(obj):
-        setattr(obj, field,
-                r_unescape(getattr(obj, field)))
-unescape(args)
+if __name__ == "__main__":
+    args = parser.parse_args()
+    def unescape(obj):
+        """Filters out escape sequences protecting non-option arguments that
+        begin with dashes or percent signs followed by dashes."""
+        def r_unescape(data):
+            """Recurses through collections looking for atoms.  Removes escape
+            percent sign from strings, leaves all others unchanged."""
+            if type(data) is str:
+                return re.sub("(%*)%(?=-)", "\g<1>", data)
+            elif type(data) in (tuple, list):
+                # tuples temporarily converted to lists of same arity; don't care
+                return [r_unescape(datum) for datum in data]
+            else:
+                return data
+        for field in vars(obj):
+            setattr(obj, field,
+                    r_unescape(getattr(obj, field)))
+    unescape(args)
 
-if len(sys.argv) == 1:
-    parser.print_usage()
-    print "You leave me with no option."
-    terminate(1)
+    if len(sys.argv) == 1:
+        parser.print_usage()
+        print "You leave me with no option."
+        terminate(1)
 
-# remove stuff
-for toremove in args.remove_license:
-    try:
-        os.remove(name_to_path(toremove))
-    except OSError as err:
-        if err.errno == 2:
+    # remove stuff
+    for toremove in args.remove_license:
+        try:
+            os.remove(name_to_path(toremove))
+        except OSError as err:
+            if err.errno == 2:
+                # fail silently unless --silent, --verbose  support added
+                pass
+    for toremove in args.remove_profile:
+        try:
+            assert config.remove_option("profiles", toremove) == True
+        except AssertionError:
             # fail silently unless --silent, --verbose  support added
             pass
-for toremove in args.remove_profile:
-    try:
-        assert config.remove_option("profiles", toremove) == True
-    except AssertionError:
-        # fail silently unless --silent, --verbose  support added
-        pass
-for suffix in args.rm_suffix:
-    config.remove_option("suffixes", suffix)
+    for suffix in args.rm_suffix:
+        config.remove_option("suffixes", suffix)
 
-# import and rename stuff
-for filepath, newname in args.imports:
-    shutil.copy(filepath, name_to_path(newname))
-for old, new in args.rename_profile:
-    olddata = config.get("profiles", old)
-    if olddata:
-        config.set("profiles", new, config.get("profiles", old))
-        config.remove_option("profiles", old)
-for old, new in args.rename_license:
-    try:
-        os.rename(name_to_path(old), name_to_path(new))
-    except OSError as err:
-        if err.errno == 2:
-            pass
-        
-# adjust defaults
-for name, value in args.defaults:
-    config.set("defaults", name, value)
-for suffix, profile in args.add_suffix:
-    config.set("suffixes", suffix, profile)
-
-# edit licenses
-for license_file in args.edit_license:
-    path = name_to_path(license_file)
-    if not args.editor:
-        print "No editor designated"
-        terminate(1)
-    if os.path.exists(path):
-        os.system("%s %s" % (args.editor, path))
-    else:
-        print "No license named %s found." % (license_file)
-        terminate(1)
-
-# load license if needed
-if args.apply_to or "sample" in args.must_see:
-    # load license
-    if not args.license:
-        args.license = d_license
-    if args.license:
-        license_file = name_to_path(args.license)
+    # import and rename stuff
+    for filepath, newname in args.imports:
+        shutil.copy(filepath, name_to_path(newname))
+    for old, new in args.rename_profile:
+        olddata = config.get("profiles", old)
+        if olddata:
+            config.set("profiles", new, config.get("profiles", old))
+            config.remove_option("profiles", old)
+    for old, new in args.rename_license:
         try:
-            license_text = open(license_file, "r").read().rstrip("\n")
-        except:
-            print "No license named '%s' found" % (args.license)
-            terminate(1)
-    else:
-        print "No license known or knowable."
-        terminate(1)
-    if not args.no_substitution:
-        # swap in replacements in the text
-        args.substitute_value.append(("owner", args.owner if args.owner 
-                                        else d_owner))
-        args.substitute_value.append(("company", 
-                            args.company if args.company else d_company))
-        args.substitute_value.append(("year", 
-                           args.year if args.year else 
-                           datetime.datetime.now().year))
-        # an even number of backslashes doesn't affect substitution
-        pieces = license_text.split("\\\\")
-        for old, new in args.substitute_value:
-            # make all substitutions unless brocket preceded by a backslash
-            pieces = [re.sub(r"(?<!\\)<%s>" % old, str(new), piece) 
-                      for piece in pieces]
-        pieces = [re.sub(r"\\(?P<brocketed>\<.*?\>)", "\g<brocketed>", piece)
-                  for piece in pieces]
-        # replace doubled backslashes, throughing first of every pair away
-        license_text = "\\".join(pieces)
+            os.rename(name_to_path(old), name_to_path(new))
+        except OSError as err:
+            if err.errno == 2:
+                pass
 
-# load profile if needed
-must_store = args.store_as or args.store_in_place
-if args.apply_to or "sample" in args.must_see or must_store:
-    if not args.profile and not args.settings and not args.force_apply:
-        # try for default profile: all suffixes must map to the same profile
-        d_profile = None
-        for filename in args.apply_to:
-            suffix = os.path.splitext(filename)[1][1:]
+    # adjust defaults
+    for name, value in args.defaults:
+        config.set("defaults", name, value)
+    for suffix, profile in args.add_suffix:
+        config.set("suffixes", suffix, profile)
+
+    # edit licenses
+    for license_file in args.edit_license:
+        path = name_to_path(license_file)
+        if not args.editor:
+            print "No editor designated"
+            terminate(1)
+        if os.path.exists(path):
+            os.system("%s %s" % (args.editor, path))
+        else:
+            print "No license named %s found." % (license_file)
+            terminate(1)
+
+    # load license if needed
+    if args.apply_to or "sample" in args.must_see:
+        # load license
+        if not args.license:
+            args.license = d_license
+        if args.license:
+            license_file = name_to_path(args.license)
             try:
-                c_profile = config.get("suffixes", suffix)
-                if not d_profile:
-                    d_profile = c_profile
-                elif d_profile != c_profile:
-                    print ("Cannot intuit profile based on suffixes: "
-                           "conflcting default for %s" % (suffix))
-                    terminate(1)
-            except ConfigParser.NoOptionError:
-                print ("Cannot intuit profile based on suffixes: no default "
-                       "set for suffix '%s'" % (suffix))
+                license_text = open(license_file, "r").read().rstrip("\n")
+            except:
+                print "No license named '%s' found" % (args.license)
                 terminate(1)
-        args.profile = d_profile
-                    
-    # create Commentator
-    if args.profile:
-        # load settings from named profile
-        try:
-            settings = eval(config.get("profiles", str(args.profile)))
-        except ConfigParser.NoOptionError:
-            print "No settings profile named %s" % (args.profile)
+        else:
+            print "No license known or knowable."
             terminate(1)
-    else:
-        settings = []
-    for setting, value in args.settings:
-        # swap in any settings explicitly set in the cmdline
-        settings.append((setting, value))
-    for setting, value in d_settings:
-        # only swap in default settings if not set elsewhere
-        if setting not in [t[0] for t in settings]:
+        if not args.no_substitution:
+            # swap in replacements in the text
+            args.substitute_value.append(("owner", args.owner if args.owner 
+                                            else d_owner))
+            args.substitute_value.append(("company", 
+                                args.company if args.company else d_company))
+            args.substitute_value.append(("year", 
+                               args.year if args.year else 
+                               datetime.datetime.now().year))
+            # an even number of backslashes doesn't affect substitution
+            pieces = license_text.split("\\\\")
+            for old, new in args.substitute_value:
+                # make all substitutions unless brocket preceded by a backslash
+                pieces = [re.sub(r"(?<!\\)<%s>" % old, str(new), piece) 
+                          for piece in pieces]
+            pieces = [re.sub(r"\\(?P<brocketed>\<.*?\>)", "\g<brocketed>", piece)
+                      for piece in pieces]
+            # replace doubled backslashes, throughing first of every pair away
+            license_text = "\\".join(pieces)
+
+    # load profile if needed
+    must_store = args.store_as or args.store_in_place
+    if args.apply_to or "sample" in args.must_see or must_store:
+        if not args.profile and not args.settings and not args.force_apply:
+            # try for default profile: all suffixes must map to the same profile
+            d_profile = None
+            for filename in args.apply_to:
+                suffix = os.path.splitext(filename)[1][1:]
+                try:
+                    c_profile = config.get("suffixes", suffix)
+                    if not d_profile:
+                        d_profile = c_profile
+                    elif d_profile != c_profile:
+                        print ("Cannot intuit profile based on suffixes: "
+                               "conflcting default for %s" % (suffix))
+                        terminate(1)
+                except ConfigParser.NoOptionError:
+                    print ("Cannot intuit profile based on suffixes: no default "
+                           "set for suffix '%s'" % (suffix))
+                    terminate(1)
+            args.profile = d_profile
+
+        # create Commentator
+        if args.profile:
+            # load settings from named profile
+            try:
+                settings = eval(config.get("profiles", str(args.profile)))
+            except ConfigParser.NoOptionError:
+                print "No settings profile named %s" % (args.profile)
+                terminate(1)
+        else:
+            settings = []
+        for setting, value in args.settings:
+            # swap in any settings explicitly set in the cmdline
             settings.append((setting, value))
-    com = obj.Commentator(settings)
+        for setting, value in d_settings:
+            # only swap in default settings if not set elsewhere
+            if setting not in [t[0] for t in settings]:
+                settings.append((setting, value))
+        com = obj.Commentator(settings)
 
-# manage named profiles
-if args.store_in_place:
-    if args.profile:
-        config.set("profiles", args.profile, com.get_storage())
+    # manage named profiles
+    if args.store_in_place:
+        if args.profile:
+            config.set("profiles", args.profile, com.get_storage())
+        else:
+            print "Can't store in place because no named profile specified."
+            terminate(1)
+    if args.store_as:
+        config.set("profiles", args.store_as, com.get_storage())
+
+    # see what must be seen
+    if "defaults" in args.must_see:
+        for var, val in config.items("defaults"):
+                print "default %s: %s" % (var, pprint.pformat(val))
+    if "suffixes" in args.must_see:
+        for var, val in sorted(config.items("suffixes")):
+            print "suffix %s: %s" % (var, val)
+    if "licenses" in args.must_see:
+        for filename in os.listdir("./licenses"):
+            print "license: %s" % (filename)
+    if "profiles" in args.must_see:
+        for var, val in sorted(config.items("profiles")):
+            print "profile: %s" % (var)
+            # get rid of braces
+            dicstr = pprint.pformat(eval(val)).replace("{", " ")[:-1]
+            for line in dicstr.split("\n"):
+                # get rid of single quotes around the data member names
+                line = line.replace("'", "", 2)
+                line = line.lstrip(" ")
+                print "\t%s" % (line)
+    if "sample" in args.must_see:
+        print com.get_boxed(license_text)
+
+    # modify the files
+    if any([args.profile, args.settings, args.force_apply]):
+        for fullpath in args.apply_to:
+            dirname = os.path.dirname(os.path.abspath(fullpath)) + os.sep
+            filename = os.path.basename(fullpath)
+            mode = stat.S_IMODE(os.stat(fullpath).st_mode)
+            fin = open(fullpath, "r")
+            fout = tempfile.NamedTemporaryFile(prefix = "tmp%s" % filename, 
+                                               dir = dirname, suffix = "txt", 
+                                               delete = False)
+            os.chmod(fout.name, mode)
+            for i in range(com.skip_line):
+                line = fin.readline()
+                fout.write(line)
+            fout.write(com.get_boxed(license_text) + "\n")
+            for line in fin.readlines():
+                fout.write(line)
+            fout.flush()
+            os.rename(fout.name, fullpath)
+            fout.close
     else:
-        print "Can't store in place because no named profile specified."
-        terminate(1)
-if args.store_as:
-    config.set("profiles", args.store_as, com.get_storage())
+        if args.apply_to:
+            print ("To write to a file, you must either specify a comment "
+                   "profile, explicitly set some commenting settings, or use "
+                   "the flag --force_apply")
+            terminate(1)
 
-# see what must be seen
-if "defaults" in args.must_see:
-    for var, val in config.items("defaults"):
-            print "default %s: %s" % (var, pprint.pformat(val))
-if "suffixes" in args.must_see:
-    for var, val in sorted(config.items("suffixes")):
-        print "suffix %s: %s" % (var, val)
-if "licenses" in args.must_see:
-    for filename in os.listdir("./licenses"):
-        print "license: %s" % (filename)
-if "profiles" in args.must_see:
-    for var, val in sorted(config.items("profiles")):
-        print "profile: %s" % (var)
-        # get rid of braces
-        dicstr = pprint.pformat(eval(val)).replace("{", " ")[:-1]
-        for line in dicstr.split("\n"):
-            # get rid of single quotes around the data member names
-            line = line.replace("'", "", 2)
-            line = line.lstrip(" ")
-            print "\t%s" % (line)
-if "sample" in args.must_see:
-    print com.get_boxed(license_text)
-
-# modify the files
-if any([args.profile, args.settings, args.force_apply]):
-    for fullpath in args.apply_to:
-        dirname = os.path.dirname(os.path.abspath(fullpath)) + os.sep
-        filename = os.path.basename(fullpath)
-        mode = stat.S_IMODE(os.stat(fullpath).st_mode)
-        fin = open(fullpath, "r")
-        fout = tempfile.NamedTemporaryFile(prefix = "tmp%s" % filename, 
-                                           dir = dirname, suffix = "txt", 
-                                           delete = False)
-        os.chmod(fout.name, mode)
-        for i in range(com.skip_line):
-            line = fin.readline()
-            fout.write(line)
-        fout.write(com.get_boxed(license_text) + "\n")
-        for line in fin.readlines():
-            fout.write(line)
-        fout.flush()
-        os.rename(fout.name, fullpath)
-        fout.close
-else:
-    if args.apply_to:
-        print ("To write to a file, you must either specify a comment "
-               "profile, explicitly set some commenting settings, or use "
-               "the flag --force_apply")
-        terminate(1)
-
-terminate(0)
+    terminate(0)
