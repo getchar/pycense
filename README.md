@@ -4,8 +4,10 @@ This program allows the user to insert license and copyright information into so
 
 For an overview of the options pycense takes, view the help page by running the command:
 
-pycense.py -h
+`pycense.py -h`
 
-For a much more detailed look at the functionality of the program, read manual.txt.
+For a much more detailed look at the functionality of the program, read the manual by typing the command:
+
+`pycense.py -m`
 
 This program and all associated documentation copyright Charlie Pashayan 2013.

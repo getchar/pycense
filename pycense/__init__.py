@@ -32,6 +32,7 @@ import stat
 import tempfile
 import pprint
 import datetime
+import subprocess
 
 __version__ = "1.0"
 __author__ = "Charlie Pashayan"
@@ -50,6 +51,7 @@ def terminate(code):
     os._exit(code)
 
 config_file = "config.conf"
+manual_file = cwd + "../docs" + os.sep + "pycense.6"
 
 config = ConfigParser.ConfigParser()
 config.read(cwd + config_file)
@@ -76,9 +78,14 @@ setattr(parser, "d_settings", d_settings)
 setattr(parser, "default_key", default_key)
 setattr(parser, "seeables", seeables)
 
+# bookkeeping
 parser.add_argument("-v", "--version", action = "version",
                     version = ("%s version %s by %s" % 
                                (parser.prog, __version__, __author__)))
+parser.add_argument("-m", "--manual", action = "store_true",
+                    default = False,
+                    help = ("show manual and quit"))
+
 # loading named entities
 parser.add_argument("--profile", "-p", type = str,
                     help = "the comment style profile to load")
@@ -277,6 +284,11 @@ if __name__ == "__main__":
         print "You leave me with no option."
         terminate(1)
 
+    # show manual if desired
+    if args.manual:
+        p = subprocess.Popen(["man", manual_file])
+        p.wait()
+        terminate(0)
     # remove stuff
     for toremove in args.remove_license:
         try:
