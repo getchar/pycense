@@ -46,15 +46,15 @@ def name_to_path(name):
 
 def terminate(code):
     """Store modified config settings and exit."""
-    with open(cwd + config_file, "wb") as fp:
+    with open(config_file, "wb") as fp:
         config.write(fp)
     os._exit(code)
 
-config_file = "config.conf"
-manual_file = cwd + "../docs" + os.sep + "pycense.6"
+config_file = cwd + "data" + os.sep + "config.conf"
+manual_file = cwd + "data" + os.sep + "pycense.6"
 
 config = ConfigParser.ConfigParser()
-config.read(cwd + config_file)
+config.read(config_file)
 
 sample_text = "Software license information goes here."
 
