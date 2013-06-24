@@ -52,8 +52,8 @@ class Commentator:
     width: the maximum width of a line (may be adjusted to suit other
       variables).
     tab: distance between tab stops.  Shouldn't be needed.
-    magic_number: if present, comment must be inserted after this.  If
-      absent, comment should be first thing in the file."""
+    skip_line: try to skip over this many lines of source code before
+      inserting the commented license."""
 
     def __init__(self, settings = []):
         """Initialize a commentator according to settings string."""

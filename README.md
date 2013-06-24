@@ -6,7 +6,7 @@ For an overview of the options pycense takes, view the help page by running the 
 
 `pycense.py -h`
 
-For a much more detailed look at the functionality of the program, read the manual by typing the command:
+For a much more detailed look at the functionality of the program, read the manual by running the command:
 
 `pycense.py -m`
 
