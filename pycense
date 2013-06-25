@@ -21,12 +21,11 @@
 # DEALINGS IN THE SOFTWARE.                                                   #
 ###############################################################################
 
-##############################################################################
-# This is just a wrapper around pycense.py.                                  #
-##############################################################################
+"""This is just a wrapper around pycense.py."""
 
+import os
 import sys
 
 base_command = "~/.pycense/pycense.py"
 command = " ".join([base_command] + sys.argv[1:])
-print command
+os.system(command)
