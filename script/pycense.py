@@ -431,7 +431,7 @@ if __name__ == "__main__":
         for var, val in sorted(config.items("suffixes")):
             print "suffix %s: %s" % (var, val)
     if "licenses" in args.must_see:
-        for filename in os.listdir("./licenses"):
+        for filename in os.listdir(cwd + "licenses"):
             print "license: %s" % (filename)
     if "profiles" in args.must_see:
         for var, val in sorted(config.items("profiles")):
