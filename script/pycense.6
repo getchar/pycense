@@ -54,8 +54,7 @@ With this flag set, pycense will apply the selected license to all the selected 
 --see SEEABLE [SEEABLE ...]
 Request to be shown some setting or data.
 
-.SH
-SEEABLES
+.SH SEEABLES
 
 .TP
 defaults
@@ -82,8 +81,7 @@ all
 .br
 Display all of the SEEABLEs that were listed above, in the order they appeared.
 
-.SH
-ADDITIONAL OPERATIONS
+.SH ADDITIONAL OPERATIONS
 .P
 You can also import, rename and edit licenses using pycense.  It's worth pointing out that all deletion, importation, renaming and editing operations are performed--in that order--before the load operations, so that if, for instance, you want to rename and load a license during one invocation of pycense, you have to refer to that license by its new name in the load request.  (Because any number of licenses can be modified during one invocation, you still need to explicitly identify the one you want to load.)
 .P
@@ -178,8 +176,8 @@ Note: the profiles below are all shown with a width of 50 in order to display pr
 .br
 --------------------------------------------------
 
-.SH
-CREATING AND MODIFYING COMMENTING PROFILES
+
+.SH CREATING AND MODIFYING COMMENTING PROFILES
 .P
 Comment profiles are defined using 13 variables, which can be set from the command line during each use or drawn from a named profile that had previously been stored.  You can also load a profile and temporarily reset any of its variables during the course of one invocation of pycense.  Here are the variables and the options used to set them:
 
@@ -238,8 +236,7 @@ Rename the profile called OLD as NEW.
 --remove_profile, -rmp PROFILE [PROFILE ...]
 Remove a profile from the configuration file.
 
-.SH
-A WORD ABOUT WIDTH: ON BEING THE RIGHT SIZE
+.SH A WORD ABOUT WIDTH: ON BEING THE RIGHT SIZE
 .P
 Because comment boxes are designed to accomodate text, the text portion of the comment box must be at least one character wide.  Furthermore, the maximum line width must be long enough to include all of the guaranteed printable portions of the comment box (that is: top_begin plus top_end, bottom_begin plus bottom_end, and left_wall plus right_wall plus one character of text).
 .P
@@ -247,8 +244,7 @@ If the width explicitly requested by the user is smaller than the minimum width 
 .P
 If there are any words that can't fit within the width of a line, they will be broken off so that they fill as much space as possible.  No hyphens will be inserted, so you'd be better off leaving ample space for longer words.
 
-.SH
-A SAMPLE COMMENT FILE
+.SH A SAMPLE COMMENT FILE
 .P
 To clarify the meaning of the settings, I'm going to walk you through a novel comment profile and the command you'll run to create it.
 .P
@@ -301,8 +297,7 @@ This may seem like a lot to type, but think of all the time it will save you in 
 .P
 This will cause your default license to be loaded, boxed up and dumped to the terminal screen for review.
 
-.SH
-SPECIAL CHARACTERS
+.SH SPECIAL CHARACTERS
 .P
 Notice that the string values in the command above were all enclosed in single quotes.  It is necessary to enclose these values in quotes to protect any spaces they might contain.  And it is advisable to use single quotes as doing so prevents the shell from interpolating any special characters, such as '$', '!', ';' or '#'.
 .P
@@ -314,8 +309,7 @@ Percent signs and dashes anywhere else in a string will be ignored completely--e
 .P
 To put it in terms of regular expressions,  one percent sign will be removed from any string beginning with one or more percent signes followed by one or more dashes: 's/^%(%*-+)/\\1/'.
 
-.SH
-LICENSES
+.SH LICENSES
 .P
 You can either write a license yourself if you're some kind of genius or just find one online.  http://opensource.org/licenses is a good resource, with lots of open source licenses indexed by name and category.
 .P
@@ -369,8 +363,7 @@ There is one restriction on the substitution strings and that is fairly common s
 .P
 So when you're installing and editing licenses, make sure that you are aware of these rules.  Licenses as they appear in the wild might not be ready to have these substitutions made cleanly.  For instance, instead of leaving a space for <owner> they might leave a space for <copyright holder>.  They might use braces, brackets or parentheses.  It wouldn't be practical to teach pycense all the different editing conventions that could possibly be used and some of them might even conflict with one another.  But fortunately it will be very easy for a human operator to make the necessary conversions.
 
-.SH
-DEFAULTS
+.SH DEFAULTS
 .P
 You can manage the various defaults using the following command line options:
 .TP
